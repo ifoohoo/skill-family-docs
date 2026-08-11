@@ -1,0 +1,43 @@
+{
+  "familyId": "skill-family-docs",
+  "platformId": "workbuddy",
+  "version": "0.1.0",
+  "projectionDigest": "placeholder",
+  "sourceDigest": "placeholder",
+  "fileCount": 0,
+  "files": [],
+  "logicalMappings": [
+    {
+      "logicalName": "help",
+      "physicalName": "help",
+      "path": "skills/help/SKILL.md",
+      "type": "human_entry",
+      "userInvocable": true
+    },
+    {
+      "logicalName": "render-site",
+      "physicalName": "render-site",
+      "path": "skills/render-site/SKILL.md",
+      "type": "human_entry",
+      "userInvocable": true
+    },
+    {
+      "logicalName": "style-guard",
+      "physicalName": "style-guard",
+      "path": "skills/style-guard/SKILL.md",
+      "type": "human_entry",
+      "userInvocable": true
+    },
+    {
+      "logicalName": "site-design",
+      "physicalName": "site-design",
+      "path": "skills/site-design/SKILL.md",
+      "type": "human_entry",
+      "userInvocable": true
+    }
+  ],
+  "lifecycleStatus": "verified_isolated_config_root",
+  "blocked": false,
+  "blockingReasons": [],
+  "advisories": []
+}

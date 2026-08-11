@@ -1,0 +1,113 @@
+---
+name: render-site
+description: 公开文档站的信息架构方法论与 skill-family-doc-render 渲染工作流。覆盖 public-release.json 配置（site.dir/target/pages/tokens 字段语义）、docs/public/site/ 源结构（pages.json、id.html、NAV/PAGER/FOOTER 注入点、版本占位符）、导航分层设计原则、内容完整性清单、渲染与 --check 基线校验。规划公开站点结构、配置渲染器、处理渲染报错或基线漂移时使用。
+---
+
+# 站点渲染与信息架构
+
+先决定站点讲什么、分几页，再谈渲染。渲染器是 dumb pipe：它按配置把页面源拼成站点，不替人决定信息架构。
+
+## 一、信息架构：先规划，后写页
+
+一个公开知识站的页面按读者任务分层，不按功能模块平铺：
+
+- **首页（index）**：学习地图。回答"这个站点讲什么、从哪页开始读"，不放正文细节。`pages.json` 里给它 `"inPager": false`，让它不进翻页链——首页是入口，不是章节。
+- **章节页**：一页讲透一个主题，页与页之间是阅读顺序（教程）或主题并列（参考）。order 字段决定顺序，也决定导航和翻页的前后关系。
+- **页数控制**：单页超过读者一次能消化的量才拆页；拆出来的每页必须能独立成立（有标题、有结论、有归属），不为凑数拆。
+
+导航分层原则：
+
+- 导航条目就是 `pages.json` 的 `title`，控制在 10 个字以内，动词或主题词开头，不用"第一章 / 第二节"这种只有顺序没有语义的标题。
+- 导航只有一层（渲染器生成平铺 `nav.toc`），所以页数要有纪律：经验值 5–12 页。超过就合并，或把细节下沉到页内锚点。
+- 翻页链（pager）是阅读路径：教程类站点按"学完这页自然想学下页"排序；参考类站点可以不依赖翻页，靠导航直达。
+
+## 二、public-release.json 配置
+
+渲染器读工作区根部的 `public-release.json`，`repos` 数组里**谁带 `site` 字段就渲染谁**。一项的最小形态：
+
+```json
+{
+  "name": "my-project",
+  "source": "path/to/my-project",
+  "tagPrefix": "my-project-v",
+  "site": {
+    "dir": "docs/public/site",
+    "target": "docs",
+    "pages": "pages.json"
+  }
+}
+```
+
+字段语义：
+
+- `name`：repo 标识，同时用于派生版本占位符名（大写、非字母数字转 `_`，如 `my-project` → `MY_PROJECT`）。
+- `source`：项目相对渲染工作区根的路径。
+- `tagPrefix`：版本标签前缀，拼上项目 `package.json` 的 `version` 得到完整 tag。
+- `site.dir`：页面源目录，相对 `source`。
+- `site.target`：渲染产物目录（GitHub Pages 源），相对 `source`。渲染时会**清空重建**该目录，产物目录里不要放手写文件。
+- `site.pages`：页面清单文件名，固定位于 `site.dir` 下。
+- `site.tokens`（可选）：额外静态占位符，键值对，页面源里写键名即被替换，例如 `"@CUSTOM_NOTE@": "任意值"`。
+
+## 三、docs/public/site/ 源结构
+
+```
+docs/public/site/
+  pages.json          # 站点元数据 + 页面清单
+  index.html          # 每个 pages[].id 对应一个 id.html
+  01-some-topic.html
+  assets
+    style.css         # 站点样式（allowlist：html/css/js/svg）
+```
+
+`pages.json` 形态：
+
+```json
+{
+  "site": { "title": "站点标题", "lang": "zh-CN", "owner": "your-org", "repo": "my-project" },
+  "pages": [
+    { "id": "index", "title": "首页 · 学习地图", "order": 0, "inPager": false },
+    { "id": "01-some-topic", "title": "某主题", "order": 1 }
+  ]
+}
+```
+
+页面源 `id.html` 是完整 HTML 文档（含 `<head>` 和样式链接），正文里放三个注入点，渲染时替换：
+
+- `<!--NAV-->`：顶部导航，当前页自动加 `class="active"`。
+- `<!--PAGER-->`：上一页 / 下一页翻页链。`inPager: false` 的页不在链里。
+- `<!--FOOTER-->`：站点页脚（版权与许可信息）。
+
+版本占位符由渲染器自动注入，命名从 `name` 派生：
+
+- `@{NAME}_TAG@` → `${tagPrefix}${version}`，如 `@MY_PROJECT_TAG@`。
+- `@{NAME}_VERSION@` → `${version}`（取自项目 `package.json`）。
+
+页面源里直接写占位符即可，渲染时全局替换。版本号只允许出现在占位符里，不要在正文手写版本号——手写即漂移源。
+
+## 四、内容完整性清单
+
+渲染前逐页核对：
+
+- 每页有归属：`pages.json` 里每个 `id` 都有对应的 `id.html`，没有孤儿文件，也没有缺失页。
+- 无占位残留：渲染产物里搜不到 `@` 包裹的未替换占位符；正文不留「待补充 / TODO」。
+- 无死链：页内 `<a href>` 指向的页都在页面清单里；站外链接逐个确认可访问。
+- 版本一致：版本号、tag 全部走占位符，全文只有一个事实源（`package.json`）。
+- 注入点齐全：每页都有 NAV / PAGER / FOOTER 三处注释，漏一个就少一块导航。
+- 泄漏自检：页面源不含本机绝对路径（用户目录、盘符路径等形式）、内部域名、凭据。渲染器写盘前会跑内容级泄漏扫描（解码后再匹配，防 HTML 实体绕过），命中即 fail-fast——但扫描是兜底，不是写作许可。
+
+## 五、渲染与校验工作流
+
+```bash
+npm run render:site                        # 渲染所有带 site 的 repo
+npm run render:site -- --repo my-project   # 只渲染指定 repo
+npm run render:site:check                  # 只校验基线，不写盘
+```
+
+工作流约定：
+
+1. 改页面源 → 跑渲染 → 渲染器重建 `target` 目录并写 `site-baseline.json`（产物树 sha256 摘要）。
+2. 把产物和基线一起提交。`--check` 用内存产物重算摘要与已提交基线比对，不一致即"漂移"退出 1——含义是"有人改了产物没改源，或改了源没重渲染"，回源目录修，不手改产物。
+3. 泄漏扫描在写盘前执行，命中即停，整个 repo 不落盘。扫描字面量可通过 `public-release.json` 的 `forbiddenPublicPaths` / `privateLiterals` 追加，不为转绿删默认规则。
+4. 产物目录每次渲染清空重建，所以任何"直接改 docs/ 产物"的修复都会被下次渲染冲掉——所有修改回 `site.dir` 源目录做。
+
+渲染器参数细节以 npm 包 `skill-family-doc-render` 的 README 为准；本技能不复述其实现，只描述契约。

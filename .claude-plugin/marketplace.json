@@ -1,0 +1,20 @@
+{
+  "name": "skill-family-docs",
+  "description": "Methodology skills for public documentation sites: planning, writing style guard, UI design, and rendering with skill-family-doc-render",
+  "owner": {
+    "name": "ifoohoo",
+    "url": "https://github.com/ifoohoo"
+  },
+  "plugins": [
+    {
+      "name": "skill-family-docs",
+      "source": "./",
+      "version": "0.1.0",
+      "description": "Methodology skills for public documentation sites: planning, writing style guard, UI design, and rendering with skill-family-doc-render",
+      "author": {
+        "name": "ifoohoo"
+      },
+      "license": "Apache-2.0"
+    }
+  ]
+}
