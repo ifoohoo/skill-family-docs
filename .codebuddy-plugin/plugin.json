@@ -1,0 +1,12 @@
+{
+  "name": "skill-family-docs",
+  "version": "0.1.1",
+  "description": "Methodology skills for public documentation sites: planning, writing style guard, UI design, and rendering with skill-family-doc-render",
+  "author": {
+    "name": "ifoohoo"
+  },
+  "license": "Apache-2.0",
+  "skills": [
+    "./adapters/workbuddy/skills/"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "skill-family-docs",
+  "version": "0.1.1",
+  "description": "Methodology skills for public documentation sites: planning, writing style guard, UI design, and rendering with skill-family-doc-render",
+  "author": {
+    "name": "ifoohoo"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/ifoohoo/skill-family-docs",
+  "keywords": [
+    "documentation",
+    "github-pages",
+    "style-guide",
+    "site-design",
+    "skill",
+    "kimi-code",
+    "workbuddy"
+  ],
+  "skills": "./adapters/kimi/skills/",
+  "interface": {
+    "displayName": "Skill Family Docs",
+    "shortDescription": "Plan, write, design, and render public documentation sites",
+    "longDescription": "Four platform-neutral skills: help entry, render-site (site information architecture plus the skill-family-doc-render CLI workflow), style-guard (three-gate Chinese technical writing guard with a self-contained Node checker), and site-design (public docs site UI guide). Generic methodology only; no private paths or business data.",
+    "developerName": "ifoohoo",
+    "websiteURL": "https://github.com/ifoohoo/skill-family-docs"
+  }
+}
