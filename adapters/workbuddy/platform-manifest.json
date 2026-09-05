@@ -1,43 +1,49 @@
 {
   "familyId": "skill-family-docs",
   "platformId": "workbuddy",
-  "version": "0.1.0",
-  "projectionDigest": "placeholder",
-  "sourceDigest": "placeholder",
-  "fileCount": 0,
-  "files": [],
+  "version": "0.2.0",
   "logicalMappings": [
     {
-      "logicalName": "help",
-      "physicalName": "help",
-      "path": "skills/help/SKILL.md",
-      "type": "human_entry",
+      "logicalName": "skill-family-docs-help",
+      "physicalName": "skill-family-docs-help",
+      "path": "skills/skill-family-docs-help/SKILL.md",
+      "entryType": "skill",
       "userInvocable": true
     },
     {
-      "logicalName": "render-site",
-      "physicalName": "render-site",
-      "path": "skills/render-site/SKILL.md",
-      "type": "human_entry",
+      "logicalName": "skill-family-docs-setup",
+      "physicalName": "skill-family-docs-setup",
+      "path": "skills/skill-family-docs-setup/SKILL.md",
+      "entryType": "skill",
       "userInvocable": true
     },
     {
-      "logicalName": "style-guard",
-      "physicalName": "style-guard",
-      "path": "skills/style-guard/SKILL.md",
-      "type": "human_entry",
+      "logicalName": "skill-family-docs-quickstart",
+      "physicalName": "skill-family-docs-quickstart",
+      "path": "skills/skill-family-docs-quickstart/SKILL.md",
+      "entryType": "skill",
       "userInvocable": true
     },
     {
-      "logicalName": "site-design",
-      "physicalName": "site-design",
-      "path": "skills/site-design/SKILL.md",
-      "type": "human_entry",
+      "logicalName": "skill-family-docs-render-site",
+      "physicalName": "skill-family-docs-render-site",
+      "path": "skills/skill-family-docs-render-site/SKILL.md",
+      "entryType": "skill",
+      "userInvocable": true
+    },
+    {
+      "logicalName": "skill-family-docs-style-guard",
+      "physicalName": "skill-family-docs-style-guard",
+      "path": "skills/skill-family-docs-style-guard/SKILL.md",
+      "entryType": "skill",
+      "userInvocable": true
+    },
+    {
+      "logicalName": "skill-family-docs-site-design",
+      "physicalName": "skill-family-docs-site-design",
+      "path": "skills/skill-family-docs-site-design/SKILL.md",
+      "entryType": "skill",
       "userInvocable": true
     }
-  ],
-  "lifecycleStatus": "verified_isolated_config_root",
-  "blocked": false,
-  "blockingReasons": [],
-  "advisories": []
+  ]
 }

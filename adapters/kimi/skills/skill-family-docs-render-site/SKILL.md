@@ -1,11 +1,20 @@
 ---
-name: render-site
-description: 公开文档站的信息架构方法论与 skill-family-doc-render 渲染工作流。覆盖 public-release.json 配置（site.dir/target/pages/tokens 字段语义）、docs/public/site/ 源结构（pages.json、id.html、NAV/PAGER/FOOTER 注入点、版本占位符）、导航分层设计原则、内容完整性清单、渲染与 --check 基线校验。规划公开站点结构、配置渲染器、处理渲染报错或基线漂移时使用。
+name: skill-family-docs-render-site
+description: skill-family-docs 插件技能：公开文档站的信息架构方法论与 skill-family-doc-render 渲染工作流。覆盖 public-release.json 配置（site.dir/target/pages/tokens 字段语义）、docs/public/site/ 源结构（pages.json、id.html、NAV/PAGER/FOOTER 注入点、版本占位符）、导航分层设计原则、内容完整性清单、渲染与 --check 基线校验。仅在公开文档站领域使用：规划站点结构、配置渲染器、处理渲染报错或基线漂移时。
 ---
 
 # 站点渲染与信息架构
 
 先决定站点讲什么、分几页，再谈渲染。渲染器是 dumb pipe：它按配置把页面源拼成站点，不替人决定信息架构。
+
+协作拓扑前提：站点源在被渲染的项目仓里，渲染配置 `public-release.json` 在渲染工作区根部，渲染命令在工作区根执行。两者可以是同一个仓（项目根放一份 `public-release.json`），也可以是「项目仓 + 独立渲染工作区」两仓。
+
+## 两种调用表面
+
+- 自然语言输入：说明站点目标或遇到的渲染问题；从项目文件读取 `public-release.json`、站点源和现有基线，只有范围、权限、安全边界或外部动作不明确时询问。
+- 参数明确输入：直接给出 repo、`public-release.json`、操作模式和站点源路径；不再重复理解意图。
+
+两种输入最终都进入本技能同一份信息架构、渲染脚本与基线验收流程。本技能是站点渲染的唯一端到端业务入口，不增加 wrapper、controller、Worker、Registry、runner 或状态机。
 
 ## 一、信息架构：先规划，后写页
 
@@ -19,7 +28,7 @@ description: 公开文档站的信息架构方法论与 skill-family-doc-render 
 
 - 导航条目就是 `pages.json` 的 `title`，控制在 10 个字以内，动词或主题词开头，不用"第一章 / 第二节"这种只有顺序没有语义的标题。
 - 导航只有一层（渲染器生成平铺 `nav.toc`），所以页数要有纪律：经验值 5–12 页。超过就合并，或把细节下沉到页内锚点。
-- 翻页链（pager）是阅读路径：教程类站点按"学完这页自然想学下页"排序；参考类站点可以不依赖翻页，靠导航直达。
+- 翻页链（pager）是阅读路径：教程类站点按"学完这页自然想学下页"排序；参考类站点可以不依赖翻页，靠导航直达。渲染器按取模回绕，翻页链是循环的：链内末页的"下一页"回到链内首页，首页的"上一页"回到末页。
 
 ## 二、public-release.json 配置
 
@@ -43,7 +52,7 @@ description: 公开文档站的信息架构方法论与 skill-family-doc-render 
 - `name`：repo 标识，同时用于派生版本占位符名（大写、非字母数字转 `_`，如 `my-project` → `MY_PROJECT`）。
 - `source`：项目相对渲染工作区根的路径。
 - `tagPrefix`：版本标签前缀，拼上项目 `package.json` 的 `version` 得到完整 tag。
-- `site.dir`：页面源目录，相对 `source`。
+- `site.dir`：页面源目录，相对 `source`。这是配置项不是硬编码路径——`docs/public/site` 是给新项目的约定，渲染器仓自带 examples 用的是 `site-src`，两处差异只是配置取值不同。
 - `site.target`：渲染产物目录（GitHub Pages 源），相对 `source`。渲染时会**清空重建**该目录，产物目录里不要放手写文件。
 - `site.pages`：页面清单文件名，固定位于 `site.dir` 下。
 - `site.tokens`（可选）：额外静态占位符，键值对，页面源里写键名即被替换，例如 `"@CUSTOM_NOTE@": "任意值"`。
@@ -58,6 +67,8 @@ docs/public/site/
   assets
     style.css         # 站点样式（allowlist：html/css/js/svg）
 ```
+
+assets 只拷贝一层，不递归子目录；只有 `.html`、`.css`、`.js`、`.svg` 四种后缀进产物。
 
 `pages.json` 形态：
 
@@ -84,6 +95,8 @@ docs/public/site/
 
 页面源里直接写占位符即可，渲染时全局替换。版本号只允许出现在占位符里，不要在正文手写版本号——手写即漂移源。
 
+注意版本兜底：项目根 `package.json` 缺失或读不出 `version` 时，占位符回退 `0.0.0`（渲染器会打 WARNING）并原样烤进公开站与基线。渲染前确认项目的 `package.json` 存在且 `version` 合法，别把 `0.0.0` 发布出去。
+
 ## 四、内容完整性清单
 
 渲染前逐页核对：
@@ -93,15 +106,17 @@ docs/public/site/
 - 无死链：页内 `<a href>` 指向的页都在页面清单里；站外链接逐个确认可访问。
 - 版本一致：版本号、tag 全部走占位符，全文只有一个事实源（`package.json`）。
 - 注入点齐全：每页都有 NAV / PAGER / FOOTER 三处注释，漏一个就少一块导航。
-- 泄漏自检：页面源不含本机绝对路径（用户目录、盘符路径等形式）、内部域名、凭据。渲染器写盘前会跑内容级泄漏扫描（解码后再匹配，防 HTML 实体绕过），命中即 fail-fast——但扫描是兜底，不是写作许可。
+- 泄漏自检：页面源不含本机绝对路径（用户目录、盘符路径等形式）、内部域名、凭据。渲染器写盘前会跑内容级泄漏扫描（解码后再匹配，防 HTML 实体绕过），扫描覆盖渲染页面与 assets 文本文件（html/css/js/svg），命中即 fail-fast——但扫描是兜底，不是写作许可。
 
 ## 五、渲染与校验工作流
 
 ```bash
-npm run render:site                        # 渲染所有带 site 的 repo
-npm run render:site -- --repo my-project   # 只渲染指定 repo
-npm run render:site:check                  # 只校验基线，不写盘
+npx skill-family-doc-render@0.2.0                     # 渲染所有带 site 的 repo
+npx skill-family-doc-render@0.2.0 --repo my-project   # 只渲染指定 repo
+npx skill-family-doc-render@0.2.0 --check             # 只校验基线，不写盘
 ```
+
+命令在渲染工作区根（`public-release.json` 所在目录）执行。没有现成工作区就 clone 渲染器仓，或在自己项目根放一份 `public-release.json` 后直接用 npx 跑。
 
 工作流约定：
 

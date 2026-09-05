@@ -6,37 +6,59 @@
 
 skill-family 生态的公开插件，教 agent 完成公开文档站的四件事：**规划**站点信息架构、**写**中文技术内容、**设计**站点视觉、**跑**渲染与校验。插件本身不含渲染实现——渲染由 npm CLI 包 `skill-family-doc-render` 完成（配置驱动的 GitHub Pages 知识站渲染器，读项目的 `public-release.json`，把 `docs/public/site/` 渲染成带导航 / 翻页 / 页脚的完整站点，写盘前做内容级泄漏扫描）。本插件描述它的配置契约与工作流，不替代它。
 
-## 四个技能
+## 六个技能
 
-- **help**：入口导览。四个技能各管什么、何时用哪个、与 npm 包的关系、最小上手示例。
-- **render-site**：`public-release.json` 配置（`site.dir/target/pages/tokens`）、`docs/public/site/` 源结构（`pages.json` + `id.html` + `<!--NAV-->` / `<!--PAGER-->` / `<!--FOOTER-->` 注入点 + `@{NAME}_TAG@` / `@{NAME}_VERSION@` 版本占位符）、导航分层设计原则、内容完整性清单、渲染与 `--check` 基线校验工作流。
-- **style-guard**：中文技术文档写作风格守卫，三道门——事实门（无材料不开长篇、禁 TODO 注水）、可读性门（句长变异、连词密度、长句率、术语首现解释）、风格门（硬禁清单 + 警告层）。附纯 Node 检测器 `scripts/check-style.mjs`，只报不改，硬禁命中退出 1：
+- **skill-family-docs-help**：入口导览。六个技能各管什么、何时用哪个、与 npm 包的关系、最小上手示例。
+- **skill-family-docs-setup**：只读环境就绪检查——安装闭包、Node 与 CLI 可用性、`public-release.json`、站点源目录、渲染前置条件。不安装、不写配置、不渲染、不发布。
+- **skill-family-docs-quickstart**：意图路由入口，按用户意图指到 help / setup / render-site / style-guard / site-design 之一；只路由，不承载执行生命周期。
+- **skill-family-docs-render-site**：`public-release.json` 配置（`site.dir/target/pages/tokens`）、`docs/public/site/` 源结构（`pages.json` + `id.html` + `<!--NAV-->` / `<!--PAGER-->` / `<!--FOOTER-->` 注入点 + `@{NAME}_TAG@` / `@{NAME}_VERSION@` 版本占位符）、导航分层设计原则、内容完整性清单、渲染与 `--check` 基线校验工作流。
+- **skill-family-docs-style-guard**：中文技术文档写作风格守卫，三道门——事实门（无材料不开长篇、禁 TODO 注水）、可读性门（句长变异、连词密度、长句率、术语首现解释）、风格门（硬禁清单 + 警告层）。附纯 Node 检测器 `scripts/check-style.mjs`，只报不改，硬禁命中退出 1：
 
   ```bash
-  node adapters/kimi/skills/style-guard/scripts/check-style.mjs 稿件.md
+  node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 稿件.md
   ```
 
-- **site-design**：公开文档站 UI 指南——版式、可读性与可访问性、`assets/style.css` 定制约束（allowlist：html/css/js/svg，配图用自绘 SVG）、渲染后视觉自检清单（深色 / 浅色、窄屏、打印、键盘）。
+- **skill-family-docs-site-design**：公开文档站 UI 指南——版式、可读性与可访问性、`assets/style.css` 定制约束（allowlist：html/css/js/svg，配图用自绘 SVG）、渲染后视觉自检清单（深色 / 浅色、窄屏、打印、键盘）。
 
-kimi 与 workbuddy 两个 adapters 下的技能内容相同，平台中立。
+kimi 与 workbuddy 是两份真实、手写的 adapters，六个同名技能文件逐字节一致。它们证明
+各自目录的载荷闭包，不证明 CodeBuddy 的真实宿主资格。CodeBuddy 与 WorkBuddy 是不同
+宿主；共享插件载荷不等于共享宿主验收结果。本版本不增加第三份 adapter。
+
+六个入口分成三个标准入口和三个业务入口：`help`、`setup`、`quickstart` 负责说明、只读
+就绪检查和意图路由；`render-site`、`style-guard`、`site-design` 分别承载站点渲染、中文
+文档审校和视觉设计验收。后三个业务入口都接受自然语言目标或已明确的参数，两种表面汇合
+到同一工作流。
 
 ## 安装
 
+以下命令只有在目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后才会安装到该版本。仓库中的候选代码或 GitHub Release 本身，不能证明 Hub 已经提供这个版本。
+
 ### kimi
 
-从插件市场安装，或在 TUI 中直接安装 GitHub 仓：
+先在 Kimi Code 中添加 Skill Family Hub：
 
 ```
-/plugin install ifoohoo/skill-family-docs
+/plugins marketplace https://raw.githubusercontent.com/ifoohoo/skill-family-hub/main/kimi-marketplace.json
 ```
 
-仓库地址：<https://github.com/ifoohoo/skill-family-docs>
+添加后从插件浏览器安装 `skill-family-docs@0.2.0`。插件仓库仍是载荷真源，Hub 只维护
+市场索引。
 
 ### workbuddy / codebuddy
 
-插件仓自带市场文件 `.claude-plugin/marketplace.json`：在 CodeBuddy 中添加市场
-`ifoohoo/skill-family-docs` 后安装 `skill-family-docs`。插件后续也会收录进
-skill-family-hub 聚合市场。
+CodeBuddy 与 WorkBuddy 统一从 Skill Family Hub 安装：
+
+```bash
+codebuddy plugin marketplace add ifoohoo/skill-family-hub
+codebuddy plugin install skill-family-docs@0.2.0
+```
+
+WorkBuddy 桌面端添加同一市场后，从插件面板安装 `skill-family-docs@0.2.0`。
+
+未来实际分发时，CodeBuddy 的发现路径、登录态和真实宿主验收需要单独核验；WorkBuddy 的
+目录验证结果仍不证明 CodeBuddy 资格。本轮 Hub-only 的 release-prepare 不运行 Kimi / CodeBuddy
+distribution 或消费者门禁。Audit 814 的规则尚未完成全量审计，局部通过记录不能表述为
+正式全量认证或 `READY_FOR_RELEASE`。
 
 ## 目录结构
 
@@ -45,9 +67,8 @@ packages/skill-family-docs/
   package.json                    # private，仅作版本源
   .kimi-plugin/plugin.json        # kimi 平台清单
   .codebuddy-plugin/plugin.json   # codebuddy/workbuddy 平台清单
-  .claude-plugin/marketplace.json # 自带市场文件（bundled-family，codebuddy 消费）
   adapters/
-    kimi/skills/                  # help / render-site / style-guard / site-design
+    kimi/skills/                  # skill-family-docs-help / -setup / -quickstart / -render-site / -style-guard / -site-design
     workbuddy/skills/             # 同上，内容一致
   README.md
   LICENSE                         # Apache-2.0
@@ -58,8 +79,8 @@ packages/skill-family-docs/
 Apache-2.0，见 [LICENSE](LICENSE)。
 
 <!-- release-skill:capability:safe-first-command -->
-> **从这里开始：** 对一篇草稿运行风格检测器——`node adapters/kimi/skills/style-guard/scripts/check-style.mjs 稿件.md`。
-> 它只读稿件、只报告问题、不改任何文件；四个技能的 SKILL.md 本身也都是纯阅读材料。
+> **从这里开始：** 对一篇草稿运行风格检测器——`node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 稿件.md`。
+> 它只读稿件、只报告问题、不改任何文件；六个技能的 SKILL.md 本身也都是纯阅读材料。
 
 <!-- release-skill:capability:external-write-boundary -->
 > **外部写边界：** 本插件只含方法论文档与一个只读检测器，不执行任何网络、git 或凭据操作。
@@ -69,13 +90,18 @@ Apache-2.0，见 [LICENSE](LICENSE)。
 ## 最小示例
 
 ```text
-/plugin install ifoohoo/skill-family-docs    # kimi TUI 安装
-# 安装后先读 help 技能，按路由进入 render-site / style-guard / site-design
+/plugins marketplace https://raw.githubusercontent.com/ifoohoo/skill-family-hub/main/kimi-marketplace.json
+# 从 Kimi Code 插件浏览器安装 skill-family-docs
+# 安装后意图不明时进 skill-family-docs-quickstart 路由；要确认环境先跑 skill-family-docs-setup；
+# 其余按路由进入 skill-family-docs-help / -render-site / -style-guard / -site-design
 ```
 
 ## 配套 CLI
 
-站点渲染由 npm 包完成：`npm install skill-family-doc-render`。日常安全第一命令是只读校验 `npx skill-family-doc-render --check`。
+站点渲染由 npm 包完成：`npm install skill-family-doc-render@0.2.0`。日常安全第一命令是
+只读校验 `npx skill-family-doc-render@0.2.0 --check`。该包要求 Node.js `>=22.22.2 <23`，
+并精确采用 `skill-family-contracts@0.18.0`、`skill-family-harness-node@0.18.0` 与
+`skill-family-engineering-kit@0.18.0`。
 
 ## 故障排查
 

@@ -1,6 +1,6 @@
 {
   "name": "skill-family-docs",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Methodology skills for public documentation sites: planning, writing style guard, UI design, and rendering with skill-family-doc-render",
   "author": {
     "name": "ifoohoo"

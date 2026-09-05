@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: Apache-2.0
-// check-style.mjs — 中文技术文档风格检测器（style-guard 三道门之风格门 + 可读性门）。
+// check-style.mjs — 中文技术文档风格检测器（skill-family-docs-style-guard 三道门之风格门 + 可读性门）。
 // 纯 Node 标准库，只报不改。硬禁命中 exit 1，输入错误 exit 2，其余 exit 0。
 // 检测项定义见 ../references/*.md 与 ../SKILL.md；统计指标只是代理信号，不是可读性结论。
 import { readFileSync, existsSync, statSync } from 'node:fs';
