@@ -21,12 +21,12 @@ description: skill-family-docs 插件技能：公开文档站中文技术文档�
 - **量化自检**：长稿落盘成 Markdown 后运行：
 
 ```bash
-node scripts/check-style.mjs 稿件.md [更多文件...]
+node scripts/check-style.mjs 稿件.md 页面.html [更多文件...]
 ```
 
 检测器输出 failure（硬禁）、warning（人工判断）和统计指标；硬禁命中退出 1，输入错误退出 2，其余退出 0。它只报不改——改句子是人的活。
 
-- **HTML 页面源**：先把正文抽成纯文本或 Markdown 再跑检测器——它只剥离 Markdown 围栏与行内代码，HTML 标签会混进统计层污染指标。
+- **HTML 页面源**：直接传入 `.html` 或 `.htm` 文件。检测器只抽取 `<main>` 内的普通正文，排除 `nav`、`footer`、`style`、`script`、`pre` 和 `code`，并把规则命中定位到原 HTML 行号。HTML 缺少 `<main>` 时按输入错误退出 2，避免把空结果当成通过。
 
 ## 一、事实门
 
@@ -46,6 +46,8 @@ node scripts/check-style.mjs 稿件.md [更多文件...]
 - **术语首现需解释**：命令、字段、状态码第一次出现时给中文语境；高频陌生术语多就加短术语表，少就就近解释，不倒背景。
 
 这些是可读性的代理指标，不是验收结论。别为了压指标机械拆句。
+
+检测器退出 0 只表示没有命中确定性硬禁。Agent 仍需要回到目标读者和事实来源做理解检查，不得把脚本 0 当成“容易读懂”的结论。
 
 ## 三、风格门
 

@@ -37,7 +37,7 @@ description: skill-family-docs 插件的入口导览，仅覆盖公开文档站�
 1. 在项目根建 `docs/public/site/`，放 `pages.json`（站点元数据 + 页面清单）和每页一个 `id.html`（含 `<!--NAV-->`、`<!--PAGER-->`、`<!--FOOTER-->` 注入点）。
 2. 在渲染器工作区的 `public-release.json` 里给该项目加 `site` 字段（`dir`/`target`/`pages`）。
 3. 用 `skill-family-docs-style-guard` 过一遍页面正文，跑 `check-style.mjs` 清掉硬禁。
-4. 运行渲染：`npx skill-family-doc-render@0.2.0`；校验基线：`npx skill-family-doc-render@0.2.0 --check`。两条命令在渲染工作区根（`public-release.json` 所在目录）执行——渲染工作区从哪来：clone 渲染器仓（skill-family-doc-render-workspace），或在自己项目根放一份 `public-release.json` 后直接用 npx 跑。
+4. 安装精确版本：`npm install --save-exact skill-family-doc-render@0.3.0`。随后运行 `npx --no-install skill-family-doc-render`；加 `--check` 可只读校验基线。
 5. 用 `skill-family-docs-site-design` 的自检清单在浏览器里过一遍成品。
 
 各步骤的细节见对应技能，不在本文件展开。

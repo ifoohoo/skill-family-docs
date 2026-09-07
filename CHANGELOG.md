@@ -1,11 +1,16 @@
 # 变更日志
 
-## 0.2.0 - 未发布
+## 0.2.1 - 2026-09-07
 
-本地候选：已包含下列变化，尚未发布。安装示例必须使用精确版本 `@0.2.0`；当前
-`.release-skill/project.yaml` 对本 release unit 仍是 `distributions: []`，本轮只准备 GitHub
-公开镜像与 Hub-only 发布表面。当前没有真实 Kimi / CodeBuddy 分发证明，后续 Hub 提案仍需
-另行授权。
+### 变更
+
+- `skill-family-docs-render-site` 把知识站影响判断纳入日常任务收尾。未建站项目先经 setup 只读诊断再创建，已有站点按 Git 变化、artifact-graph 上下文、覆盖状态、语义判断、风格审校、覆盖刷新、渲染和最终检查的顺序增量更新。新工作流说明 `site.versionSources`、`site.coverage`、覆盖快照和 status/refresh 退出码合同。
+- `skill-family-docs-style-guard` 的确定性检测器支持直接读取 HTML。它从 `<main>` 抽取正文，排除导航、页脚、样式、脚本和代码区，并把命中定位到原 HTML 行号。Markdown 行为与既有规则保持不变。
+- 渲染器 0.3.0 发布后统一使用该精确版本。安装和 npx 示例不再引导用户获取缺少新合同的旧版本。
+
+## 0.2.0 - 2026-09-05
+
+发布坐标：tag `skill-family-docs-v0.2.0`。
 
 ### 不兼容变更
 

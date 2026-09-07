@@ -7,7 +7,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 
 const files = process.argv.slice(2);
 if (!files.length) {
-  console.error('用法: node check-style.mjs <稿件.md> [更多文件...]');
+  console.error('用法: node check-style.mjs <稿件.md|页面.html> [更多文件...]');
   process.exit(2);
 }
 for (const f of files) {
@@ -83,15 +83,112 @@ function stripCode(text) {
   return out.join('\n');
 }
 
+const HTML_EXCLUDED_ELEMENTS = new Set(['nav', 'footer', 'style', 'script', 'pre', 'code']);
+const HTML_VOID_ELEMENTS = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param',
+  'source', 'track', 'wbr',
+]);
+
+function decodeHtmlEntities(text) {
+  const named = new Map([
+    ['amp', '&'], ['lt', '<'], ['gt', '>'], ['quot', '"'], ['apos', "'"], ['nbsp', ' '],
+  ]);
+  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z][a-z0-9]+);/gi, (entity, body) => {
+    if (body[0] !== '#') return named.get(body.toLowerCase()) ?? entity;
+    const radix = body[1]?.toLowerCase() === 'x' ? 16 : 10;
+    const digits = radix === 16 ? body.slice(2) : body.slice(1);
+    const value = Number.parseInt(digits, radix);
+    if (!Number.isInteger(value) || value < 0 || value > 0x10ffff || (value >= 0xd800 && value <= 0xdfff)) {
+      return entity;
+    }
+    if (value === 10 || value === 13) return ' ';
+    return String.fromCodePoint(value);
+  });
+}
+
+// 只保留 <main> 内的普通文本，并保留原始换行，使诊断能指回 HTML 源文件。
+function extractHtmlMain(text) {
+  let output = '';
+  let cursor = 0;
+  let mainDepth = 0;
+  const excludedStack = [];
+  let sawMain = false;
+
+  while (cursor < text.length) {
+    if (text[cursor] !== '<') {
+      const nextTag = text.indexOf('<', cursor);
+      const end = nextTag === -1 ? text.length : nextTag;
+      const chunk = text.slice(cursor, end);
+      if (mainDepth > 0 && excludedStack.length === 0) output += decodeHtmlEntities(chunk);
+      else output += chunk.replace(/[^\n]/g, ' ');
+      cursor = end;
+      continue;
+    }
+
+    const commentEnd = text.startsWith('<!--', cursor) ? text.indexOf('-->', cursor + 4) : -1;
+    let tagEnd;
+    if (commentEnd !== -1) {
+      tagEnd = commentEnd + 2;
+    } else {
+      let quote = null;
+      tagEnd = cursor + 1;
+      for (; tagEnd < text.length; tagEnd++) {
+        const char = text[tagEnd];
+        if (quote) {
+          if (char === quote) quote = null;
+        } else if (char === '"' || char === "'") {
+          quote = char;
+        } else if (char === '>') {
+          break;
+        }
+      }
+      if (tagEnd >= text.length) tagEnd = text.length - 1;
+    }
+
+    const token = text.slice(cursor, tagEnd + 1);
+    const match = token.match(/^<\s*(\/?)\s*([a-z][\w:-]*)/i);
+    if (match) {
+      const closing = match[1] === '/';
+      const name = match[2].toLowerCase();
+      const selfClosing = /\/\s*>$/.test(token) || HTML_VOID_ELEMENTS.has(name);
+      if (excludedStack.length > 0) {
+        const excludedName = excludedStack.at(-1);
+        if (closing && name === excludedName) excludedStack.pop();
+        else if (!closing && name === excludedName && !selfClosing) excludedStack.push(name);
+      } else if (closing) {
+        if (name === 'main' && mainDepth > 0) mainDepth--;
+      } else {
+        if (name === 'main') {
+          sawMain = true;
+          mainDepth++;
+        }
+        if (HTML_EXCLUDED_ELEMENTS.has(name) && !selfClosing) excludedStack.push(name);
+      }
+    }
+    output += token.replace(/[^\n]/g, ' ');
+    cursor = tagEnd + 1;
+  }
+
+  return { prose: output, sawMain };
+}
+
+function proseFor(path, raw) {
+  if (!/\.html?$/i.test(path)) return stripCode(raw);
+  const extracted = extractHtmlMain(raw);
+  if (!extracted.sawMain) throw new Error(`HTML 缺少 <main> 正文: ${path}`);
+  return extracted.prose;
+}
+
 function checkFile(path) {
   const raw = readFileSync(path, 'utf8');
-  const prose = stripCode(raw);
+  const prose = proseFor(path, raw);
+  const html = /\.html?$/i.test(path);
   const proseLines = prose.split('\n');
   const rawLines = raw.split('\n');
   const findings = [];
 
   for (const rule of RULES) {
-    const source = rule.skipCode ? proseLines : rawLines;
+    const source = html || rule.skipCode ? proseLines : rawLines;
     source.forEach((line, i) => {
       rule.re.lastIndex = 0;
       let m;
@@ -156,7 +253,13 @@ function checkFile(path) {
 let totalFailure = 0;
 let totalWarning = 0;
 for (const f of files) {
-  const r = checkFile(f);
+  let r;
+  try {
+    r = checkFile(f);
+  } catch (error) {
+    console.error(`输入错误: ${error.message}`);
+    process.exit(2);
+  }
   const failures = r.findings.filter((x) => x.level === 'failure');
   const warnings = r.findings.filter((x) => x.level === 'warning');
   totalFailure += failures.length;
