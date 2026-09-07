@@ -1,38 +1,47 @@
 ---
 name: skill-family-docs-setup
-description: skill-family-docs 插件技能：只读检查公开文档站渲染环境是否就绪。检查安装闭包（skill-family-doc-render npm 包）、Node 与 CLI 可用性、public-release.json、版本源与 release unit 的一致性、站点源目录和渲染前置条件；环境就绪时明确报告无需变更。只读检查：不自动安装依赖、不创建或修改配置、不执行渲染写盘、不调用发布动作。仅在公开文档站领域使用：首次接入、环境异常诊断或渲染前就绪确认时。
+description: 公开知识站的环境诊断与本地接入入口。“检查环境”“是否就绪”或没有写入意图的直接调用只读运行；只有用户明确要求“接入项目”或“准备并接线”时，才补齐授权范围内的本地配置。不生成整站正文，不安装宿主插件，不发布。
 ---
 
-# 环境就绪检查（只读）
+# 环境诊断与项目接入
 
-`skill-family-docs-setup` 只做一件事：检查公开文档站渲染环境是否就绪。检查项全部只读；环境已就绪时明确报告「无需变更」，不做多余动作。
+setup 先判断用户是要只读检查，还是明确要求修改当前项目。这两种模式共用同一份环境和配置事实，但写入边界不同。
 
-## 检查清单
+## 先确定模式
 
-按顺序逐项执行，任一失败即停并报告缺什么、怎么补（怎么补是人的决定，本技能不代劳）：
+- 只读诊断：用户说“检查环境”“确认是否就绪”，或只点名 setup 而没有表达写入意图。
+- 本地接入：用户明确说“接入项目”“准备环境并接线”或同等语义。
 
-1. **Node 版本**：`node --version`。渲染器要求 Node ≥ 22.22.2 且 < 23（npm 包 `skill-family-doc-render` 的 `engines` 声明）。版本不符时报告实际版本与要求，不自动切换 Node。
-2. **CLI 可用性**：按顺序找一个已存在的 `skill-family-doc-render` 命令，只执行找到的那一个：
-   1. 当前项目的 `node_modules/.bin/skill-family-doc-render`；
-   2. `command -v skill-family-doc-render` 找到的本机命令。
-   用该命令执行 `--help`，应输出用法并退出 0；`--help` 是只读命令。两条路都找不到时，只报告 CLI 缺失，并建议维护者安装精确版本 `skill-family-doc-render@0.3.0`；本技能不执行安装，也不访问 registry。第 6 步复用本步发现的同一命令。
-3. **工作区配置**：渲染工作区根存在 `public-release.json` 且是可解析 JSON。只读取校验，不创建、不修改。
-4. **版本源一致性**：只读取 `.release-skill/project.yaml`。对 `site.versionSources` 中表示 release unit 版本或标签的每个 token，将 `repo.source + versionSources.<token>.source` 规范化为工作区相对路径；再将对应 `releaseUnits[].source + releaseUnits[].version.source` 用同样方式规范化。两条组合路径必须指向同一个 JSON 事实源，冲突时立即停止并列出 token、release unit 和两条路径。不修改任何一份配置来自动消除冲突。
-5. **站点源完整性**：对 `public-release.json` 里每个带 `site` 字段的 repo 确认：
-   - `site.dir` 下的 `pages.json` 存在且可解析；
-   - `pages.json` 里每个 `id` 都有对应的 `id.html`；
-   - 被检查项目的站点源中若有名为 assets 的子目录，其中文件只能使用 allowlist 后缀（`.html` / `.css` / `.js` / `.svg`，二进制一律进不了产物）。
-6. **基线与覆盖状态**：用第 2 步发现的同一命令执行 `--check`（只读校验，不写盘）。报漂移说明源与产物不一致、需要重渲染。对每个带 `site.coverage` 的 repo，再用同一命令执行 `--status --repo <name>`：退出 0 表示覆盖一致，退出 1 表示快照缺失或落后，退出 2 表示配置或工具错误。重渲染和刷新覆盖都属 `skill-family-docs-render-site`，不在本技能范围。
+意图不明确时使用只读诊断。不把“帮忙看看”解释为写入授权。
 
-## 结果报告
+## 共用检查
 
-- 全部通过：明确报告「环境就绪，无需变更」，逐项给一条通过证据。
-- 有缺失：逐项列出缺失项、观察到的现象和补救方向（例如「Node 版本不符：装 22.x」「基线漂移：回源目录改后重渲染」）。本技能不执行补救。
+1. 读取项目约束、包管理器、Node.js 版本来源与未提交改动。多个 Node.js 约束冲突时停止，不猜版本。
+2. 找到 `public-release.json` 及目标 repo，确认 `site.dir`、`site.target`、`site.pages`、版本源和覆盖范围。
+3. 确认项目使用精确版本的 `skill-family-doc-render`，锁文件与实际 CLI 一致。不使用浮动 `latest`，也不把本地源版本当成已发布证据。
+4. 新格式项目必须显式声明 `site.format: "markdown-v1"` 与 `site.template: "editorial"`。检查 `pages.json` 中的站点元数据、分组、页面 ID、`role`、`kind`、顺序及 `inPager`，并确认每页对应 `<id>.md`。
+5. 读取项目现有文档检查、`check:release-docs` 和 release-skill `hooks.docs`。记录原命令的顺序、工作目录、环境和失败传播。
+6. 配置完整时，在 `public-release.json` 所在目录执行只读项目检查：
 
-## 边界
+   ```bash
+   skill-family-doc-render --check-project --repo <name>
+   ```
 
-- 只运行已存在的 CLI（按检查清单第 2 步的顺序发现）；CLI 缺失时只报告缺失与安装方向，不执行安装、不访问 registry。
-- 不创建、不修改 `public-release.json`、站点源或任何配置文件。
-- 不执行渲染写盘（渲染属 `skill-family-docs-render-site`）。
-- 不调用任何发布动作。
-- 检查命令的输出只用于诊断，不写进任何文件。
+   该命令检查输入与公开安全、覆盖状态、正文确定性规则、渲染一致性、内部链接和资源。退出 0 表示通过，1 表示内容或产物需要处理，2 表示输入或配置错误。
+
+## 只读诊断
+
+只读模式不安装依赖，不创建或修改配置，不渲染，不刷新覆盖快照。结果逐项列出实际值、缺失或冲突和恢复入口。全部通过时明确报告“环境就绪，无需变更”。
+
+## 本地接入
+
+本地接入保护项目已有改动，只补下列缺项：
+
+1. 按项目的包管理器和锁文件添加已核对的精确渲染包版本。
+2. 在目标 repo 增加 `site` 配置、版本源和覆盖输入；建立内容目录及 `pages.json`。产品类型只能依据项目权威说明选为 `plugin` 或 `library`。
+3. 把 `--check-project --repo <name>` 接入项目现有文档检查。已有命令时扩展该命令，保留既有顺序和失败传播；已有 `hooks.docs` 时接入该调用链。
+4. 项目未采用 release-skill 时，只报告“本地已就绪，发布集成未配置”。不创建远程、发布目标或猜测的 hook。
+
+setup 不临时编写整站正文。它完成配置后把首次生成交给 `skill-family-docs-render-site`。已存在的输出路径、版本源或文档检查若与新合同冲突，先列出差异并停止，不自动覆盖。
+
+第二次执行相同接入请求时，配置和锁文件必须保持原字节。结果报告“无需变更”，并列出实际检查命令、退出码和仍未执行的发布或宿主动作。

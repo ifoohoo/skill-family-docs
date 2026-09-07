@@ -1,43 +1,32 @@
 ---
 name: skill-family-docs-help
-description: skill-family-docs 插件的入口导览，仅覆盖公开文档站规划、写作、设计与渲染这一领域。说明六个技能（skill-family-docs-help、skill-family-docs-render-site、skill-family-docs-style-guard、skill-family-docs-site-design、skill-family-docs-setup、skill-family-docs-quickstart）各管什么、何时用哪个、与 npm 包 skill-family-doc-render 的关系，并给出最小上手示例。在 skill-family-docs / 公开文档站渲染领域内不确定该用哪个技能时使用。
+description: skill-family-docs 插件的能力导览。说明六个技能各管什么、何时使用、与 skill-family-doc-render 的关系及最短使用路径。在公开知识站领域不确定该用哪个技能时使用。
 ---
 
 # skill-family-docs 能力导览
 
-本插件教 agent 完成公开文档站的四件事：规划、写作、设计、渲染。它本身不含渲染实现——渲染由 npm CLI 包 `skill-family-doc-render` 完成，插件负责方法论。
+本插件让 Agent 用受限 Markdown 维护公开知识站。LLM（大语言模型）只负责有依据的正文；精确版本的 `skill-family-doc-render` 负责 `editorial` 模板、导航、样式、交互、扫描和确定性输出。新站不需要手写 HTML、CSS 或 JavaScript。
 
-## 六个技能各管什么
+## 六个技能
 
-- **skill-family-docs-help**（本技能）：入口导览。不确定用哪个技能时先读这里。
-- **skill-family-docs-render-site**：站点信息架构 + 渲染工作流。回答"站点分几页、每页放什么、怎么跑渲染、怎么校验基线"。涉及 `public-release.json` 配置、`docs/public/site/` 源结构、注入点、版本占位符、泄漏扫描和 `--check` 校验。
-- **skill-family-docs-style-guard**：中文技术文档写作风格守卫。三道门：事实门（没材料不开长篇）、可读性门（句长变异、连词密度、术语首现解释）、风格门（硬禁清单 + 警告层）。附带纯 Node 检测器 check-style.mjs（在该技能的 scripts 目录下），只报不改。
-- **skill-family-docs-site-design**：公开文档站 UI 设计指南。版式、可读性、可访问性、站点样式文件 style.css 的定制约束、渲染后视觉自检清单。
-- **skill-family-docs-setup**：只读环境就绪检查。检查 Node、CLI、`public-release.json` 与站点源是否就绪；只检查不安装、不写盘。
-- **skill-family-docs-quickstart**：只做意图路由。听用户意图指到目标技能后退出，不承载执行生命周期。
+- `skill-family-docs-help`：提供入口导览和最短路径。
+- `skill-family-docs-setup`：默认只读诊断。只有用户明确要求“接入项目”或“准备并接线”时，才补齐当前项目的本地配置。
+- `skill-family-docs-quickstart`：根据意图路由到其他五个技能，不自己执行。
+- `skill-family-docs-render-site`：处理首次生成、内容刷新、纯渲染，以及用户明确要求的目录调整或模板升级。
+- `skill-family-docs-style-guard`：用事实、理解和表达三道检查审校中文技术内容。
+- `skill-family-docs-site-design`：验收固定 `editorial` 主题的阅读与交互体验。
 
-## 何时用哪个
+## 最短使用路径
 
-- 从零规划一个公开文档站 → 先 `skill-family-docs-render-site` 定信息架构，再 `skill-family-docs-site-design` 定视觉。
-- 写或改站点页面正文（.html 里的中文内容）→ `skill-family-docs-style-guard`。
-- 页面写完，要跑渲染、处理渲染报错或基线漂移 → `skill-family-docs-render-site`。
-- 渲染完成，要检查"看起来对不对" → `skill-family-docs-site-design` 的视觉自检清单。
-- 首次接入，或环境异常（Node / CLI / 配置 / 站点源不齐）→ 先 `skill-family-docs-setup` 做只读环境就绪检查。
-- 渲染前想确认环境就绪 → `skill-family-docs-setup`。
-- 意图不清、不确定该用哪个技能 → `skill-family-docs-quickstart` 做意图路由。
+1. 检查环境时，调用 `skill-family-docs-setup` 做只读诊断。
+2. 首次接入时，明确说明“接入项目并接线”。setup 只补缺项，正文交给 render-site。
+3. 请求“首次生成知识站”或“根据当前变化刷新知识”时，调用 `skill-family-docs-render-site`。
+4. 只需按现有源重建时，明确说明“只重新渲染”。该模式不审阅正文，也不刷新覆盖快照。
 
-## 与 npm 包 skill-family-doc-render 的关系
+## 与渲染包的边界
 
-`skill-family-doc-render` 是配置驱动的 GitHub Pages 知识站渲染器：读项目里的 `public-release.json`，把各项目 `docs/public/site/` 下的页面源渲染成带导航、翻页、页脚的完整站点，写盘前做内容级泄漏扫描。本插件的 `skill-family-docs-render-site` 技能描述它的配置字段和工作流；实际执行渲染时以该包自带的 README 和脚本输出为准，插件不替代它、也不复述它的实现细节。
+`public-release.json` 决定渲染哪个项目。新站使用 `site.format: "markdown-v1"` 和 `site.template: "editorial"`；`pages.json` 是页面 ID、分组、顺序、职责和阅读路径的唯一清单，正文保存在 `<id>.md`。渲染包的 `--check-project --repo <name>` 执行只读项目检查。
 
-## 最小上手示例
+未声明 `site.format` 的旧项目仍走 HTML 兼容路径。只有用户明确要求迁移或调整结构时，技能才修改清单、格式或模板。
 
-一个项目要建公开文档站，最短路径：
-
-1. 在项目根建 `docs/public/site/`，放 `pages.json`（站点元数据 + 页面清单）和每页一个 `id.html`（含 `<!--NAV-->`、`<!--PAGER-->`、`<!--FOOTER-->` 注入点）。
-2. 在渲染器工作区的 `public-release.json` 里给该项目加 `site` 字段（`dir`/`target`/`pages`）。
-3. 用 `skill-family-docs-style-guard` 过一遍页面正文，跑 `check-style.mjs` 清掉硬禁。
-4. 安装精确版本：`npm install --save-exact skill-family-doc-render@0.3.0`。随后运行 `npx --no-install skill-family-doc-render`；加 `--check` 可只读校验基线。
-5. 用 `skill-family-docs-site-design` 的自检清单在浏览器里过一遍成品。
-
-各步骤的细节见对应技能，不在本文件展开。
+本插件不发布软件，不更新宿主安装，也不把本地版本当成已发布证据。

@@ -1,5 +1,15 @@
 # 变更日志
 
+## 0.4.0 - 2026-09-07
+
+### 变更
+
+- 六个技能转向 `markdown-v1` 和包内 `editorial` 模板。新站由 `pages.json` 管理分组目录、页面职责和教程顺序，项目不再编写主题 CSS 或页面 JavaScript。
+- `skill-family-docs-setup` 保留默认只读诊断；只有用户明确要求接入或准备并接线时，才补齐当前项目的本地配置，并保留既有文档检查。
+- `skill-family-docs-render-site` 分开首次生成、内容刷新、纯渲染和显式结构或模板升级。普通刷新保留目录与模板，纯渲染不更新正文或覆盖快照。
+- 发布前恢复提示统一指向 `skill-family-doc-render --check-project --repo <name>` 的实际输出。发布钩子只读阻断，不调用 LLM 改正文。
+- `check:adapters` 新增版本一致性检查。包版本、Kimi 与 CodeBuddy 插件清单、Kimi 与 WorkBuddy 平台清单必须一致。
+
 ## 0.2.1 - 2026-09-07
 
 ### 变更
