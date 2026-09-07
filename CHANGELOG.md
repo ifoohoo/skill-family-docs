@@ -1,5 +1,16 @@
 # 变更日志
 
+## 0.4.1 - 2026-09-07
+
+### 新增
+
+- 新增 Claude Code 与 Codex 插件清单及 adapter。两个新 adapter 与 Kimi、WorkBuddy 继续共享同一组六技能，style-guard 的脚本和参考资料也保持逐字节一致。
+- `check:adapters` 通过 Foundation 0.18.0 的 `describeHost` 和 `verifyHostPeers` 核验 Claude Code、Codex、Kimi Code、WorkBuddy 四个宿主及其权威路径分类。
+
+### 变更
+
+- 包清单、四份插件清单与四份平台清单统一更新为 0.4.1。README 增加四宿主经 Skill Family Hub 安装本版本的入口。
+
 ## 0.4.0 - 2026-09-07
 
 ### 变更

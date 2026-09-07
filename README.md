@@ -1,6 +1,6 @@
 # skill-family-docs
 
-`skill-family-docs` 是面向 Kimi 与 WorkBuddy / CodeBuddy 的公开知识站技能插件。它让 Agent 用受限 Markdown 准备项目、首次生成知识站、按产品变化刷新内容，或只按现有源重新渲染。
+`skill-family-docs` 是面向 Claude Code、Codex、Kimi Code 与 WorkBuddy / CodeBuddy 的公开知识站技能插件。它让 Agent 用受限 Markdown 准备项目、首次生成知识站、按产品变化刷新内容，或只按现有源重新渲染。
 
 插件不包含渲染实现。精确版本的 npm 包 `skill-family-doc-render` 读取 `public-release.json`，使用包内 `editorial` 模板生成完整 HTML、CSS、静态搜索和浏览器交互。LLM（大语言模型）只更新有来源支持的正文。
 
@@ -13,7 +13,7 @@
 - `skill-family-docs-style-guard`：用事实、理解和表达三道检查审校中文正文。
 - `skill-family-docs-site-design`：验收 `editorial` 模板的导航、阅读、搜索、复制、主题、键盘和窄屏体验。
 
-Kimi 与 WorkBuddy 使用两份真实 adapter 目录。六个同名技能及 style-guard 的配套文件必须逐字节一致。`npm run check:adapters` 同时检查两份载荷闭包、逻辑映射，以及包版本与两份插件清单、两份平台清单的版本一致性。
+四个宿主使用各自的 adapter 目录。六个同名技能及 style-guard 的配套文件必须逐字节一致。`npm run check:adapters` 同时检查四份载荷闭包、逻辑映射，以及包版本与四份插件清单、四份平台清单的版本一致性。
 
 ## 使用路径
 
@@ -62,25 +62,39 @@ node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 
 
 仓库中的 `package.json` 是插件本地源版本。它不能证明该版本已发布、已被 Hub 登记或已安装到宿主。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，才可声称该版本能从 Hub 获取；宿主是否生效仍以安装记录为准。
 
-当前源包版本为 0.4.0，四份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。
+当前源包版本为 0.4.1，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。
 
-完成上述发布和登记后，Kimi Code 可先添加 Skill Family Hub，再从插件浏览器安装 `skill-family-docs@0.4.0`：
+完成上述发布和登记后，Claude Code 可从 Skill Family Hub 安装 0.4.1：
+
+```text
+/plugin marketplace add ifoohoo/skill-family-hub
+/plugin install skill-family-docs@skill-family-hub
+```
+
+Codex 使用同一个 Hub：
+
+```bash
+codex plugin marketplace add ifoohoo/skill-family-hub
+codex plugin add skill-family-docs@skill-family-hub
+```
+
+Kimi Code 先添加 Hub，再从插件浏览器安装 `skill-family-docs@0.4.1`：
 
 ```text
 /plugins marketplace https://raw.githubusercontent.com/ifoohoo/skill-family-hub/main/kimi-marketplace.json
 ```
 
-CodeBuddy 使用同一 Hub：
+CodeBuddy 也使用同一 Hub：
 
 ```bash
 codebuddy plugin marketplace add ifoohoo/skill-family-hub
-codebuddy plugin install skill-family-docs@0.4.0
+codebuddy plugin install skill-family-docs@0.4.1
 ```
 
 WorkBuddy 桌面端从插件面板添加同一市场并安装该版本。站点渲染器是独立 npm 包；项目需要 CLI 时精确安装本版配套候选：
 
 ```bash
-npm install --save-exact skill-family-doc-render@0.4.0
+npm install --save-exact skill-family-doc-render@0.4.1
 ```
 
 ## 最小示例
@@ -105,9 +119,15 @@ npm install --save-exact skill-family-doc-render@0.4.0
 ```text
 packages/skill-family-docs/
   package.json
+  .claude-plugin/plugin.json
+  .codex-plugin/plugin.json
   .kimi-plugin/plugin.json
   .codebuddy-plugin/plugin.json
   adapters/
+    claude/platform-manifest.json
+    claude/skills/
+    codex/platform-manifest.json
+    codex/skills/
     kimi/platform-manifest.json
     kimi/skills/
     workbuddy/platform-manifest.json
@@ -117,7 +137,7 @@ packages/skill-family-docs/
   LICENSE
 ```
 
-`adapters/kimi/skills/` 与 `adapters/workbuddy/skills/` 是两份手写载荷。改动后运行 `npm run check:adapters`，不用其中一份的通过结果代替另一个宿主的真实安装验收。
+四个 `adapters/*/skills/` 目录是手写载荷。改动后运行 `npm run check:adapters`，不用其中一份的通过结果代替其他宿主的真实安装验收。
 
 <!-- release-skill:capability:safe-first-command -->
 > 安全起点：调用 `skill-family-docs-setup` 做只读诊断。该模式不安装依赖，不改配置，不渲染，也不刷新覆盖快照。

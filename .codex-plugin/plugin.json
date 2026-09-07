@@ -13,15 +13,24 @@
     "style-guide",
     "site-design",
     "skill",
-    "kimi-code",
-    "workbuddy"
+    "codex"
   ],
-  "skills": "./adapters/kimi/skills/",
+  "skills": "./adapters/codex/skills/",
   "interface": {
     "displayName": "Skill Family Docs",
     "shortDescription": "Plan, write, design, and render public documentation sites",
-    "longDescription": "Six platform-neutral skills: skill-family-docs-help entry, skill-family-docs-render-site (site information architecture plus the skill-family-doc-render CLI workflow), skill-family-docs-style-guard (three-gate Chinese technical writing guard with a self-contained Node checker), skill-family-docs-site-design (public docs site UI guide), skill-family-docs-setup (read-only readiness checks plus bounded local wiring when explicitly requested), and skill-family-docs-quickstart (intent routing only). Generic methodology only; no private paths or business data.",
+    "longDescription": "Six platform-neutral skills for preparing, reviewing, maintaining, and rendering public documentation sites with skill-family-doc-render.",
     "developerName": "ifoohoo",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Check whether this project is ready for a public documentation site.",
+      "Refresh this project's public documentation site.",
+      "Review this Chinese technical document before release."
+    ],
     "websiteURL": "https://github.com/ifoohoo/skill-family-docs"
   }
 }

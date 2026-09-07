@@ -6,7 +6,14 @@
     "name": "ifoohoo"
   },
   "license": "Apache-2.0",
-  "skills": [
-    "./adapters/workbuddy/skills/"
-  ]
+  "homepage": "https://github.com/ifoohoo/skill-family-docs",
+  "keywords": [
+    "documentation",
+    "github-pages",
+    "style-guide",
+    "site-design",
+    "skill",
+    "claude-code"
+  ],
+  "skills": "./adapters/claude/skills/"
 }
