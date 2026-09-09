@@ -179,6 +179,13 @@ function proseFor(path, raw) {
   return extracted.prose;
 }
 
+function lineForRule(rule, line, html) {
+  if (!html && rule.id === 'exclamation') {
+    return line.replace(/^(\s*>\s*)\[!(?:NOTE|TIP|WARNING)\](?=\s*$)/, '$1');
+  }
+  return line;
+}
+
 function checkFile(path) {
   const raw = readFileSync(path, 'utf8');
   const prose = proseFor(path, raw);
@@ -190,9 +197,10 @@ function checkFile(path) {
   for (const rule of RULES) {
     const source = html || rule.skipCode ? proseLines : rawLines;
     source.forEach((line, i) => {
+      const checkedLine = lineForRule(rule, line, html);
       rule.re.lastIndex = 0;
       let m;
-      while ((m = rule.re.exec(line)) !== null) {
+      while ((m = rule.re.exec(checkedLine)) !== null) {
         findings.push({ level: rule.level, line: i + 1, id: rule.id, hit: m[0].trim(), msg: rule.msg });
         if (m.index === rule.re.lastIndex) rule.re.lastIndex++;
       }

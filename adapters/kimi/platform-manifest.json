@@ -1,7 +1,7 @@
 {
   "familyId": "skill-family-docs",
   "platformId": "kimi-code",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "logicalMappings": [
     {
       "logicalName": "skill-family-docs-help",

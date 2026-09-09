@@ -8,7 +8,7 @@
 
 - `skill-family-docs-help`：提供能力总览和最短使用路径。
 - `skill-family-docs-setup`：默认只读诊断。只有用户明确要求接入项目或准备并接线时，才补齐当前项目的本地配置。
-- `skill-family-docs-quickstart`：只做意图路由，不执行业务流程。
+- `skill-family-docs-quickstart`：按用户意图选择目标技能，并在同一轮把请求交给目标技能继续执行；它不重复目标技能的业务逻辑。
 - `skill-family-docs-render-site`：处理首次生成、内容刷新、纯渲染，以及显式的目录调整或模板升级。
 - `skill-family-docs-style-guard`：用事实、理解和表达三道检查审校中文正文。
 - `skill-family-docs-site-design`：验收 `editorial` 模板的导航、阅读、搜索、复制、主题、键盘和窄屏体验。
@@ -17,7 +17,7 @@
 
 ## 使用路径
 
-只读检查环境时，调用 `skill-family-docs-setup`。首次接入时，明确说明“接入项目并接线”；setup 只补缺项，整站正文交给 `skill-family-docs-render-site`。
+不确定入口时，调用 `skill-family-docs-quickstart` 并直接描述目标。它会在同一轮选择并调用目标技能，不会只返回技能名。只读检查环境时，也可以直接调用 `skill-family-docs-setup`。首次接入时，明确说明“接入项目并接线”；setup 只补缺项，整站正文交给 `skill-family-docs-render-site`。
 
 新站的 `public-release.json` 显式选择内容格式和模板：
 
@@ -62,9 +62,9 @@ node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 
 
 仓库中的 `package.json` 是插件本地源版本。它不能证明该版本已发布、已被 Hub 登记或已安装到宿主。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，才可声称该版本能从 Hub 获取；宿主是否生效仍以安装记录为准。
 
-当前源包版本为 0.4.1，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。
+当前源包版本为 0.4.2，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。
 
-完成上述发布和登记后，Claude Code 可从 Skill Family Hub 安装 0.4.1：
+完成上述发布和登记后，Claude Code 可从 Skill Family Hub 安装 0.4.2：
 
 ```text
 /plugin marketplace add ifoohoo/skill-family-hub
@@ -78,7 +78,7 @@ codex plugin marketplace add ifoohoo/skill-family-hub
 codex plugin add skill-family-docs@skill-family-hub
 ```
 
-Kimi Code 先添加 Hub，再从插件浏览器安装 `skill-family-docs@0.4.1`：
+Kimi Code 先添加 Hub，再从插件浏览器安装 `skill-family-docs@0.4.2`：
 
 ```text
 /plugins marketplace https://raw.githubusercontent.com/ifoohoo/skill-family-hub/main/kimi-marketplace.json
@@ -88,7 +88,7 @@ CodeBuddy 也使用同一 Hub：
 
 ```bash
 codebuddy plugin marketplace add ifoohoo/skill-family-hub
-codebuddy plugin install skill-family-docs@0.4.1
+codebuddy plugin install skill-family-docs@0.4.2
 ```
 
 WorkBuddy 桌面端从插件面板添加同一市场并安装该版本。站点渲染器是独立 npm 包；项目需要 CLI 时精确安装本版配套候选：

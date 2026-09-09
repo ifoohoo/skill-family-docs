@@ -18,9 +18,13 @@ setup 先判断用户是要只读检查，还是明确要求修改当前项目�
 
 1. 读取项目约束、包管理器、Node.js 版本来源与未提交改动。多个 Node.js 约束冲突时停止，不猜版本。
 2. 找到 `public-release.json` 及目标 repo，确认 `site.dir`、`site.target`、`site.pages`、版本源和覆盖范围。
-3. 确认项目使用精确版本的 `skill-family-doc-render`，锁文件与实际 CLI 一致。不使用浮动 `latest`，也不把本地源版本当成已发布证据。
+3. 先读取项目的依赖政策、锁文件和已有命令，再确定 CLI 来源：
+   - 已有依赖或项目命令能定位已发布的精确 `skill-family-doc-render` 版本时，直接复用，并确认锁文件与实际 CLI 一致。
+   - 项目允许添加工具依赖时，才按当前包管理器添加已核对的精确版本并更新现有锁文件。
+   - 项目禁止 `devDependencies`，但明确允许使用精确版本的外部 QA 工具时，使用 `npx --yes --package skill-family-doc-render@<精确版本> skill-family-doc-render ...`。该路径不修改 `package.json` 或锁文件，接入的检查命令也必须保留精确版本。
+   - 上述来源都不符合项目政策时，停止接入并报告阻塞条件，不临时安装、不改用浮动 `latest`，也不把本地源版本当成已发布证据。
 4. 新格式项目必须显式声明 `site.format: "markdown-v1"` 与 `site.template: "editorial"`。检查 `pages.json` 中的站点元数据、分组、页面 ID、`role`、`kind`、顺序及 `inPager`，并确认每页对应 `<id>.md`。
-5. 读取项目现有文档检查、`check:release-docs` 和 release-skill `hooks.docs`。记录原命令的顺序、工作目录、环境和失败传播。
+5. 读取项目现有文档检查、`check:release-docs` 和 release-skill `hooks.docs`。记录原命令的顺序、工作目录、环境和失败传播。判断某个字段不存在时，必须完整解析结构化配置，或对全文件执行精确字段搜索并核对匹配区段；`head`、局部读取和被截断的输出都不能证明字段不存在。输出被截断时继续缩小搜索范围或分段读取，直到定位字段或读到 EOF。
 6. 配置完整时，在 `public-release.json` 所在目录执行只读项目检查：
 
    ```bash
@@ -37,9 +41,9 @@ setup 先判断用户是要只读检查，还是明确要求修改当前项目�
 
 本地接入保护项目已有改动，只补下列缺项：
 
-1. 按项目的包管理器和锁文件添加已核对的精确渲染包版本。
+1. 按共用检查选定的 CLI 来源接入。只有项目允许添加工具依赖时，才按包管理器和锁文件添加已核对的精确渲染包版本；使用外部 QA 工具路径时不改包清单和锁文件。
 2. 在目标 repo 增加 `site` 配置、版本源和覆盖输入；建立内容目录及 `pages.json`。产品类型只能依据项目权威说明选为 `plugin` 或 `library`。
-3. 把 `--check-project --repo <name>` 接入项目现有文档检查。已有命令时扩展该命令，保留既有顺序和失败传播；已有 `hooks.docs` 时接入该调用链。
+3. 把 `--check-project --repo <name>` 接入项目现有文档检查。已有命令时扩展该命令，保留既有顺序和失败传播；已有 `hooks.docs` 时只在其调用链中组合新检查，不替换或跳过原命令。现有入口无法安全组合时，列出冲突并停止，不另建旁路 hook。
 4. 项目未采用 release-skill 时，只报告“本地已就绪，发布集成未配置”。不创建远程、发布目标或猜测的 hook。
 
 setup 不临时编写整站正文。它完成配置后把首次生成交给 `skill-family-docs-render-site`。已存在的输出路径、版本源或文档检查若与新合同冲突，先列出差异并停止，不自动覆盖。

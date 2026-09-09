@@ -1,6 +1,6 @@
 {
   "name": "skill-family-docs",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Methodology skills for public documentation sites: planning, writing style guard, UI design, and rendering with skill-family-doc-render",
   "author": {
     "name": "ifoohoo"
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Skill Family Docs",
     "shortDescription": "Plan, write, design, and render public documentation sites",
-    "longDescription": "Six platform-neutral skills: skill-family-docs-help entry, skill-family-docs-render-site (site information architecture plus the skill-family-doc-render CLI workflow), skill-family-docs-style-guard (three-gate Chinese technical writing guard with a self-contained Node checker), skill-family-docs-site-design (public docs site UI guide), skill-family-docs-setup (read-only readiness checks plus bounded local wiring when explicitly requested), and skill-family-docs-quickstart (intent routing only). Generic methodology only; no private paths or business data.",
+    "longDescription": "Six platform-neutral skills: skill-family-docs-help entry, skill-family-docs-render-site (site information architecture plus the skill-family-doc-render CLI workflow), skill-family-docs-style-guard (three-gate Chinese technical writing guard with a self-contained Node checker), skill-family-docs-site-design (public docs site UI guide), skill-family-docs-setup (read-only readiness checks plus bounded local wiring when explicitly requested), and skill-family-docs-quickstart (intent routing followed by same-turn target skill invocation). Generic methodology only; no private paths or business data.",
     "developerName": "ifoohoo",
     "websiteURL": "https://github.com/ifoohoo/skill-family-docs"
   }

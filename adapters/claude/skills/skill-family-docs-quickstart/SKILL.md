@@ -1,11 +1,11 @@
 ---
 name: skill-family-docs-quickstart
-description: skill-family-docs 插件的意图路由入口。按用户意图确定性路由到 help、setup、render-site、style-guard 或 site-design。只做路由，不执行业务流程。
+description: skill-family-docs 插件的执行入口。按用户意图选择 help、setup、render-site、style-guard 或 site-design，并在同一轮调用目标技能继续执行；不重复目标技能的业务逻辑。
 ---
 
-# 公开知识站意图路由
+# 公开知识站执行入口
 
-`skill-family-docs-quickstart` 只返回目标技能和必要的后续顺序。它不读取配置，不执行命令，也不写入文件。
+`skill-family-docs-quickstart` 先选择目标技能，再使用当前宿主的技能调用能力加载该技能，并在同一轮继续执行。它不在自身正文里重复目标技能的业务流程，也不能只返回技能名后停止。
 
 | 用户意图 | 目标技能 |
 | --- | --- |
@@ -16,6 +16,6 @@ description: skill-family-docs 插件的意图路由入口。按用户意图确�
 | 起草或审校中文正文 | `skill-family-docs-style-guard` |
 | 验收或明确调整站点阅读体验 | `skill-family-docs-site-design` |
 
-意图能唯一落到一行时，只返回该技能。请求横跨多个阶段时，返回第一个技能，并列出后续顺序。意图仍不明确时，路由到 `skill-family-docs-help`。
+意图能唯一落到一行时，调用该技能并返回它的实际结果。请求横跨多个阶段时，先调用第一个技能；只有用户请求确实覆盖后续阶段，且前一阶段已经满足进入条件，才继续调用后续技能。意图仍不明确时，调用 `skill-family-docs-help` 并返回能力导览。
 
-路由结果不扩大用户授权。“检查”不能路由成写入接入，“只重新渲染”不能路由成内容刷新。
+目标技能拥有本次业务判断、工具选择、写入边界和完成标准。quickstart 不自行补写步骤，也不把目标技能的失败改写成成功。路由结果不扩大用户授权：“检查”不能变成写入接入，“只重新渲染”不能变成内容刷新。

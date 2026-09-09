@@ -11,7 +11,7 @@ description: skill-family-docs 插件的能力导览。说明六个技能各管�
 
 - `skill-family-docs-help`：提供入口导览和最短路径。
 - `skill-family-docs-setup`：默认只读诊断。只有用户明确要求“接入项目”或“准备并接线”时，才补齐当前项目的本地配置。
-- `skill-family-docs-quickstart`：根据意图路由到其他五个技能，不自己执行。
+- `skill-family-docs-quickstart`：根据意图选择其他五个技能，并在同一轮把请求交给目标技能继续执行；它不重复目标技能的业务逻辑。
 - `skill-family-docs-render-site`：处理首次生成、内容刷新、纯渲染，以及用户明确要求的目录调整或模板升级。
 - `skill-family-docs-style-guard`：用事实、理解和表达三道检查审校中文技术内容。
 - `skill-family-docs-site-design`：验收固定 `editorial` 主题的阅读与交互体验。
