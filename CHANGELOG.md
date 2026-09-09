@@ -1,5 +1,12 @@
 # 变更日志
 
+## 0.4.3 - 2026-09-09
+
+### 修复
+
+- 为 WorkBuddy 与 CodeBuddy 增加插件根目录 `skills/` 投影，并让 CodeBuddy 插件清单直接指向该目录。WorkBuddy 桌面端的斜杠菜单不读取自定义 adapter 路径；此次修复让六个已加载技能也能作为斜杠入口显示。
+- `check:adapters` 现在逐文件核对根目录投影与 WorkBuddy adapter 的成员和字节，防止兼容投影演变为第二事实源。
+
 ## 0.4.2 - 2026-09-09
 
 ### 修复

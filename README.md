@@ -62,9 +62,9 @@ node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 
 
 仓库中的 `package.json` 是插件本地源版本。它不能证明该版本已发布、已被 Hub 登记或已安装到宿主。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，才可声称该版本能从 Hub 获取；宿主是否生效仍以安装记录为准。
 
-当前源包版本为 0.4.2，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。
+当前源包版本为 0.4.3，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。
 
-完成上述发布和登记后，Claude Code 可从 Skill Family Hub 安装 0.4.2：
+完成上述发布和登记后，Claude Code 可从 Skill Family Hub 安装 0.4.3：
 
 ```text
 /plugin marketplace add ifoohoo/skill-family-hub
@@ -78,7 +78,7 @@ codex plugin marketplace add ifoohoo/skill-family-hub
 codex plugin add skill-family-docs@skill-family-hub
 ```
 
-Kimi Code 先添加 Hub，再从插件浏览器安装 `skill-family-docs@0.4.2`：
+Kimi Code 先添加 Hub，再从插件浏览器安装 `skill-family-docs@0.4.3`：
 
 ```text
 /plugins marketplace https://raw.githubusercontent.com/ifoohoo/skill-family-hub/main/kimi-marketplace.json
@@ -88,10 +88,10 @@ CodeBuddy 也使用同一 Hub：
 
 ```bash
 codebuddy plugin marketplace add ifoohoo/skill-family-hub
-codebuddy plugin install skill-family-docs@0.4.2
+codebuddy plugin install skill-family-docs@0.4.3
 ```
 
-WorkBuddy 桌面端从插件面板添加同一市场并安装该版本。站点渲染器是独立 npm 包；项目需要 CLI 时精确安装本版配套候选：
+WorkBuddy 桌面端从插件面板添加同一市场并安装该版本。安装或升级后重启客户端，即可在斜杠菜单中直接选择六个技能入口。站点渲染器是独立 npm 包；项目需要 CLI 时精确安装本版配套候选：
 
 ```bash
 npm install --save-exact skill-family-doc-render@0.4.1

@@ -1,0 +1,86 @@
+---
+name: skill-family-docs-render-site
+description: 公开知识站的信息架构、正文维护与 skill-family-doc-render 工作流入口。处理 markdown-v1/editorial 的首次生成、内容刷新、纯渲染、显式结构调整或模板升级。项目已声明 site 时，公开 API、命令、配置或文档任务交付前也使用本技能判断知识站影响。
+---
+
+# 生成、刷新与渲染公开知识站
+
+先确定本次操作模式，再决定写集。首次生成、内容刷新、纯渲染和结构调整不能混在同一个默认流程里。
+
+## 共享合同
+
+`public-release.json` 是渲染项目、内容目录、输出目录、版本源和覆盖输入的唯一配置源。新站明确选择：
+
+```json
+{
+  "site": {
+    "dir": "docs/public/site",
+    "target": "docs/public/rendered",
+    "pages": "pages.json",
+    "format": "markdown-v1",
+    "template": "editorial"
+  }
+}
+```
+
+该片段只说明格式和模板字段。版本源和覆盖范围仍使用项目的实际配置。
+
+`pages.json` 管理站点名称、`productKind`、导航分组、页面 ID、标题、`role`、`kind`、顺序和 `inPager`。正文只保存在 `site.dir/<id>.md`。一级标题由清单的 `title` 生成，Markdown 从首段导语和二级标题开始。
+
+正文只用受限 Markdown：段落、二至四级标题、列表、表格、链接、行内代码、带语言标记的代码块、`prompt` 代码块，以及 `NOTE` / `TIP` / `WARNING` 提示。稳定章节在标题末尾写 `{#id}`。不输入原始 HTML、MDX、内联样式、脚本、事件属性或自定义 CSS 类。
+
+`editorial` 模板随精确版本的渲染包提供 HTML、CSS、浏览器交互、图标和搜索索引。日常刷新不修改模板，也不在项目内复制主题资源。
+
+## 操作模式
+
+### 首次生成
+
+1. 读取项目权威说明、代码、公开接口、命令、配置、已发布说明和制品关系。只写有来源支持的事实。
+2. 项目尚未接入时，在同一请求的授权范围内调用 `skill-family-docs-setup` 的本地接入模式。不要求用户自行拼接底层命令。
+3. 根据 `productKind` 建立页面职责。插件型项目先讲环境与接入、首次成功、刷新和发布恢复；库型项目先讲选能力、安装和最小调用。
+4. 编写 Markdown 后调用 `skill-family-docs-style-guard`，先核对事实，再冷读读者任务，最后检查表达。
+5. 语义审阅通过后刷新覆盖快照，再渲染并执行项目检查。预览优先使用只读 HTTP 服务。任何可能写回文件的宿主展示工具（包括 `present_files`）不得接收 `site.target` 下的正式文件；需要使用时，先把完整输出目录复制到仓库外的临时目录，只向工具传递副本。工具返回后，把 `--check-project --repo <name>` 作为最后一项检查；退出码非零时不得报告完成。
+
+### 内容刷新
+
+1. 同时读取已暂存、未暂存和未跟踪的相关变化。项目已采用 artifact-graph 时，使用其官方变化上下文；未采用时记录该输入不存在。
+2. 在 `public-release.json` 所在目录执行 `skill-family-doc-render --status --repo <name>`，读取覆盖状态和变化路径。
+3. 根据读者影响作出语义判断。公开行为、接口、命令、配置、版本、限制或操作步骤变化时，只修改相关 Markdown。内部实现变化但读者行为不变时，保留正文并说明依据。
+4. 普通刷新保留页面 ID、标题、分组、顺序、`productKind`、模板和输出路径。不因文案更新重排目录。
+5. 正文变化时完成 style-guard 与任务冷读。随后执行 `--refresh-coverage --repo <name>`，再渲染并检查。不能提前刷新快照来消除落后状态。
+6. 没有读者影响时不自由重写正文。语义判断完成后，只在现有合同要求时刷新覆盖快照。
+
+### 纯渲染
+
+用户明确说“只重新渲染”或“按现有源重建”时，只执行确定性渲染和必要的只读检查。不修改 Markdown、`pages.json`、覆盖快照、模板或配置。
+
+覆盖状态已落后时，仍可以重建产物，但要报告“仍需内容审阅”。不把纯渲染扩大成正文修改，也不刷新快照掩盖落后。
+
+### 显式结构调整或模板升级
+
+只有用户明确要求时才修改页面职责、ID、分组、顺序、格式或模板。实施前列出新旧目录、URL 和稳定锚点差异。模板升级通过精确渲染包版本完成，不单独手写显示版本。
+
+已经有外部消费者的旧 URL 和锚点必须保留或提供同页兼容。无法保留时停止受影响的迁移，不自行制造破坏性变更。
+
+## 命令与失败恢复
+
+以下命令都在 `public-release.json` 所在目录运行，使用项目已安装的精确版本 CLI：
+
+```bash
+skill-family-doc-render --repo <name>
+skill-family-doc-render --check-project --repo <name>
+skill-family-doc-render --status --repo <name>
+skill-family-doc-render --refresh-coverage --repo <name>
+```
+
+第一条重建目标站点。第二条只读组合项目公开安全、覆盖、正文规则、渲染一致性、链接和资源检查。后两条分别读取和刷新覆盖状态。
+
+`--check-project` 失败时，先保留实际 repo、配置位置、变化或漂移原因和退出码。随后向用户提供这段恢复入口：
+
+```prompt
+请使用 skill-family-docs-render-site 处理仓库 <name> 的知识站检查失败。先读取 public-release.json 和 skill-family-doc-render --check-project --repo <name> 的实际输出，再判断需要内容刷新、纯渲染还是修正配置。不提前刷新覆盖快照，不手改生成产物。
+```
+
+发布钩子只执行上述只读项目检查。它不调用 LLM，不修改正文、覆盖快照或产物。当前 Agent 已加载本技能时可依据恢复提示继续；宿主没有加载时必须把提示送达用户，不声称已自动分派。
+
+未声明 `site.format` 的旧站仍使用兼容路径。本技能不在普通刷新中把旧站隐式迁移到新模板。
