@@ -1,6 +1,6 @@
 {
   "name": "skill-family-docs",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "private": true,
   "description": "Multi-platform skill plugin for Claude Code, Codex, Kimi Code, and WorkBuddy/CodeBuddy: methodology for planning, writing, designing, and rendering public documentation sites with the skill-family-doc-render npm CLI.",
   "license": "Apache-2.0"
