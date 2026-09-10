@@ -7,7 +7,7 @@
 ## 六个技能
 
 - `skill-family-docs-help`：提供能力总览和最短使用路径。
-- `skill-family-docs-setup`：默认只读诊断。只有用户明确要求接入项目或准备并接线时，才补齐当前项目的本地配置。
+- `skill-family-docs-setup`：先只读诊断；缺项可安全处理时，展示精确计划和影响并询问是否执行。用户明确同意已展示且复核未漂移的计划后，才补齐当前项目的本地配置。
 - `skill-family-docs-quickstart`：按用户意图选择目标技能，并在同一轮把请求交给目标技能继续执行；它不重复目标技能的业务逻辑。
 - `skill-family-docs-render-site`：处理首次生成、内容刷新、纯渲染，以及显式的目录调整或模板升级。
 - `skill-family-docs-style-guard`：用事实、理解和表达三道检查审校中文正文。
@@ -17,7 +17,7 @@ Claude Code 与 WorkBuddy / CodeBuddy 从插件根目录的 `skills/` 加载六�
 
 ## 使用路径
 
-不确定入口时，调用 `skill-family-docs-quickstart` 并直接描述目标。它会在同一轮选择并调用目标技能，不会只返回技能名。只读检查环境时，也可以直接调用 `skill-family-docs-setup`。首次接入时，明确说明“接入项目并接线”；setup 只补缺项，整站正文交给 `skill-family-docs-render-site`。
+不确定入口时，调用 `skill-family-docs-quickstart` 并直接描述目标。它会在同一轮选择并调用目标技能，不会只返回技能名。检查环境或首次接入时，也可以直接调用 `skill-family-docs-setup`。setup 先区分环境就绪、接入缺项、站点内容待处理、自定义工具链冲突或前提不足；需要写入时，它会列出官方核实的精确版本、当前包管理器命令、文件影响、不会执行的动作和成功信号，再询问是否执行。整站正文仍交给 `skill-family-docs-render-site`。
 
 新站的 `public-release.json` 显式选择内容格式和模板：
 
@@ -62,9 +62,9 @@ node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 
 
 仓库中的 `package.json` 是插件本地源版本。它不能证明该版本已发布、已被 Hub 登记或已安装到宿主。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，才可声称该版本能从 Hub 获取；宿主是否生效仍以安装记录为准。
 
-当前源包版本为 0.4.4，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。
+当前源包版本为 0.4.5，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。
 
-完成上述发布和登记后，Claude Code 可从 Skill Family Hub 安装 0.4.4：
+完成上述发布和登记后，Claude Code 可从 Skill Family Hub 安装 0.4.5：
 
 ```text
 /plugin marketplace add ifoohoo/skill-family-hub
@@ -78,7 +78,7 @@ codex plugin marketplace add ifoohoo/skill-family-hub
 codex plugin add skill-family-docs@skill-family-hub
 ```
 
-Kimi Code 先添加 Hub，再从插件浏览器安装 `skill-family-docs@0.4.4`：
+Kimi Code 先添加 Hub，再从插件浏览器安装 `skill-family-docs@0.4.5`：
 
 ```text
 /plugins marketplace https://raw.githubusercontent.com/ifoohoo/skill-family-hub/main/kimi-marketplace.json
@@ -88,13 +88,13 @@ CodeBuddy 也使用同一 Hub：
 
 ```bash
 codebuddy plugin marketplace add ifoohoo/skill-family-hub
-codebuddy plugin install skill-family-docs@0.4.4
+codebuddy plugin install skill-family-docs@0.4.5
 ```
 
 WorkBuddy 桌面端从插件面板添加同一市场并安装该版本。安装或升级后重启客户端，即可在斜杠菜单中直接选择六个技能入口。站点渲染器是独立 npm 包；项目需要 CLI 时精确安装本版配套候选：
 
 ```bash
-npm install --save-exact skill-family-doc-render@0.4.4
+npm install --save-exact skill-family-doc-render@0.4.5
 ```
 
 ## 最小示例
@@ -105,7 +105,7 @@ npm install --save-exact skill-family-doc-render@0.4.4
 请使用 skill-family-docs-help 说明知识站能力，并告诉我应该从哪个入口开始。
 ```
 
-确定入口后，可使用 `skill-family-docs-setup` 检查当前项目的知识站环境是否就绪。需要首次接入时明确写入意图，例如“请使用 skill-family-docs-setup 接入当前项目并接线”。接入完成后，再调用 `skill-family-docs-render-site` 生成第一版知识站。
+确定入口后，可使用 `skill-family-docs-setup` 检查当前项目的知识站环境是否就绪。需要首次接入时可以说“请使用 skill-family-docs-setup 接入当前项目并接线”。这句话启动接入事务，不授权执行尚未展示的计划；setup 会先只读检查并展示影响，用户明确同意该计划后才写入。接入配置完成后，再调用 `skill-family-docs-render-site` 生成第一版知识站。
 
 ## 故障诊断
 
@@ -141,9 +141,9 @@ packages/skill-family-docs/
 根 `skills/` 与四个 `adapters/*/skills/` 目录都是手写载荷。改动后运行 `npm run check:adapters`，不用其中一份的通过结果代替其他宿主的真实安装验收。
 
 <!-- release-skill:capability:safe-first-command -->
-> 安全起点：调用 `skill-family-docs-setup` 做只读诊断。该模式不安装依赖，不改配置，不渲染，也不刷新覆盖快照。
+> 安全起点：调用 `skill-family-docs-setup`。它先只读诊断；缺项可安全处理时展示精确计划和影响，再询问是否执行。授权前不安装依赖，不改配置，不渲染，不刷新覆盖快照，也不写 MEMORY、缓存或宿主持久状态。
 
 <!-- release-skill:capability:external-write-boundary -->
-> 外部写入边界：插件不发布软件，不安装或更新宿主。用户明确要求本地接入时，setup 只修改当前项目的授权配置；站点产物只由渲染包写入 `public-release.json` 声明的 `site.target`。
+> 外部写入边界：插件不发布软件，不安装或更新宿主。用户明确同意 setup 已展示且复核未漂移的计划后，setup 只修改计划内的当前项目配置；站点产物只由渲染包写入 `public-release.json` 声明的 `site.target`。
 
 Apache-2.0，详见 [LICENSE](LICENSE)。
