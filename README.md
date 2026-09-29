@@ -35,14 +35,29 @@ Claude Code 与 WorkBuddy / CodeBuddy 从插件根目录的 `skills/` 加载六�
 
 该片段不代替项目的版本源和覆盖输入。`pages.json` 保存站点元数据、导航分组、页面 ID、标题、职责、版式和顺序；正文保存在 `<id>.md`。模板负责站点样式和脚本，项目不自定义 CSS、JavaScript 或 HTML 组件。
 
-以下命令在 `public-release.json` 所在目录运行，用于渲染、只读项目检查、读取覆盖状态和刷新覆盖快照：
+扫描、渲染、覆盖状态和刷新覆盖快照在 `public-release.json` 所在目录运行。先在官方 npm 确认 `skill-family-doc-render@0.5.0` 可用，再执行本版命令。已发布的 `0.4.5` 没有 `--conclusion-output` 和 `--read-proof`。
 
 ```bash
-skill-family-doc-render --repo <name>
-skill-family-doc-render --check-project --repo <name>
-skill-family-doc-render --status --repo <name>
-skill-family-doc-render --refresh-coverage --repo <name>
+npx skill-family-doc-render@0.5.0 --repo <name>
+npx skill-family-doc-render@0.5.0 --check-project --repo <name>
+npx skill-family-doc-render@0.5.0 --check-project --repo <name> --conclusion-output /absolute/path/conclusion.json
+npx skill-family-doc-render@0.5.0 --status --repo <name>
+npx skill-family-doc-render@0.5.0 --refresh-coverage --repo <name>
 ```
+
+读取旧证明使用同一精确版本，可在任意工作目录运行：
+
+```bash
+npx skill-family-doc-render@0.5.0 --read-proof --proof-root /absolute/proof-root --proof relative/conclusion.json
+```
+
+`--check-project` 只做机械检查：输入与公开安全、覆盖、内存渲染与磁盘基线、内部链接和资源。它不靠重新渲染让检查通过，也不执行目标脚本或 hook。项目还没有网站配置时，扫描停在现有失败原因，不会初始化或建站。只有同时给出 `--conclusion-output` 时才排他写入一份共同证明；不带该参数时不额外写文件。
+
+`--read-proof` 只用调用方给出的 proof-root 和该根内相对路径读取本族证明。它不读 `public-release.json`，不要求站点配置，也不重新扫描目标。旧证明只记录原目标当时的结论。
+
+这两类命令互斥。刷新证明会重新检查，并把新文件写到新路径；旧文件保留。整改、渲染写入和建站仍要单独授权。
+
+渲染器证明只覆盖机械范围。链接检查通过不能代替中文语义审阅。记载未通过、未完成或未能开展检查的证明，结论保持为未通过。本地候选已经做过的出证和读证，仍只覆盖当时的机械范围。发布、Hub 登记和四个宿主的新回复以官方记录为准。
 
 内容刷新会根据 Git 变化、制品上下文和覆盖状态判断读者影响。它只修改相关 Markdown，保留页面 ID、分组、顺序和模板。纯渲染不修改正文或覆盖快照。
 
@@ -62,9 +77,9 @@ node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 
 
 仓库中的 `package.json` 是插件本地源版本。它不能证明该版本已发布、已被 Hub 登记或已安装到宿主。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，才可声称该版本能从 Hub 获取；宿主是否生效仍以安装记录为准。
 
-当前源包版本为 0.4.5，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。
+当前源包版本为 0.5.0，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。从 Hub 安装前，先核对 Skill Family Hub 是否已经登记这一精确版本。
 
-完成上述发布和登记后，Claude Code 可从 Skill Family Hub 安装 0.4.5：
+完成上述发布和登记后，Claude Code 可从 Skill Family Hub 安装 0.5.0：
 
 ```text
 /plugin marketplace add ifoohoo/skill-family-hub
@@ -78,7 +93,7 @@ codex plugin marketplace add ifoohoo/skill-family-hub
 codex plugin add skill-family-docs@skill-family-hub
 ```
 
-Kimi Code 先添加 Hub，再从插件浏览器安装 `skill-family-docs@0.4.5`：
+Kimi Code 先添加 Hub，再从插件浏览器安装 `skill-family-docs@0.5.0`：
 
 ```text
 /plugins marketplace https://raw.githubusercontent.com/ifoohoo/skill-family-hub/main/kimi-marketplace.json
@@ -88,13 +103,13 @@ CodeBuddy 也使用同一 Hub：
 
 ```bash
 codebuddy plugin marketplace add ifoohoo/skill-family-hub
-codebuddy plugin install skill-family-docs@0.4.5
+codebuddy plugin install skill-family-docs@0.5.0
 ```
 
-WorkBuddy 桌面端从插件面板添加同一市场并安装该版本。安装或升级后重启客户端，即可在斜杠菜单中直接选择六个技能入口。站点渲染器是独立 npm 包；项目需要 CLI 时精确安装本版配套候选：
+WorkBuddy 桌面端从插件面板添加同一市场并安装该版本。安装或升级后重启客户端，即可在斜杠菜单中直接选择六个技能入口。站点渲染器是独立 npm 包。项目需要 CLI 时，先在官方 npm 确认 `skill-family-doc-render@0.5.0` 可用，再精确安装：
 
 ```bash
-npm install --save-exact skill-family-doc-render@0.4.5
+npm install --save-exact skill-family-doc-render@0.5.0
 ```
 
 ## 最小示例

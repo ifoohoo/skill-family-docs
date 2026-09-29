@@ -75,7 +75,7 @@ description: 公开知识站的信息架构、正文维护与 skill-family-doc-r
 
 ## 命令与失败恢复
 
-以下命令都在 `public-release.json` 所在目录运行，使用项目已安装的精确版本 CLI：
+扫描、渲染、覆盖状态和刷新覆盖快照在 `public-release.json` 所在目录运行。项目里的 CLI 使用已在官方 npm 确认可用的 `skill-family-doc-render@0.5.0`：
 
 ```bash
 skill-family-doc-render --repo <name>
@@ -84,7 +84,29 @@ skill-family-doc-render --status --repo <name>
 skill-family-doc-render --refresh-coverage --repo <name>
 ```
 
-第一条重建目标站点。第二条只读组合项目公开安全、覆盖、正文规则、渲染一致性、链接和资源检查。后两条分别读取和刷新覆盖状态。
+第一条重建目标站点。第二条只读检查公开安全、覆盖、正文规则、渲染一致性、链接和资源。它不重新渲染来让检查通过，也不执行目标脚本或 hook。后两条分别读取和刷新覆盖状态。项目还没有网站配置时，这些扫描和刷新停在现有失败原因，不会初始化或创建站点。
+
+`--conclusion-output` 和 `--read-proof` 属于 `skill-family-doc-render@0.5.0`。先在官方 npm 确认该精确版本可用，再执行。已发布的 `0.4.5` 没有这两个参数。下面的示例说明本版用法；发布、Hub 登记和四个宿主的新回复以官方记录为准。
+
+扫描时在目标 `public-release.json` 所在目录运行：
+
+```bash
+npx skill-family-doc-render@0.5.0 --check-project --repo <name> --conclusion-output /absolute/path/conclusion.json
+```
+
+读取旧证明可以在任意工作目录运行：
+
+```bash
+npx skill-family-doc-render@0.5.0 --read-proof --proof-root /absolute/proof-root --proof relative/conclusion.json
+```
+
+`--conclusion-output` 只在调用方给出绝对路径时排他创建一份共同证明，不覆盖已有文件。
+
+`--read-proof` 只用调用方给出的 proof-root 和该根内相对路径解释本族证明。它不读 `public-release.json`，不要求站点配置，不重新扫描，也不追随证明正文中的路径。旧证明只记录原目标当时的结论。
+
+`--check-project` 与 `--read-proof` 互斥。刷新证明就是重新执行检查并写到新路径。整改、渲染写入和建站仍使用原来的单独授权。
+
+渲染器出具的证明只覆盖上述机械范围。中文语义审阅只有实际做完，才能按自己的范围说明。链接检查通过不能当作正文正确。记载未通过、未完成或未能开展检查的证明，结论保持为未通过。本地候选已经做过的出证和读证验证，仍只覆盖当时的机械范围。
 
 `--check-project` 失败时，先保留实际 repo、配置位置、变化或漂移原因和退出码。随后向用户提供这段恢复入口：
 
@@ -95,3 +117,9 @@ skill-family-doc-render --refresh-coverage --repo <name>
 发布钩子只执行上述只读项目检查。它不调用 LLM，不修改正文、覆盖快照或产物。当前 Agent 已加载本技能时可依据恢复提示继续；宿主没有加载时必须把提示送达用户，不声称已自动分派。
 
 未声明 `site.format` 的旧站仍使用兼容路径。本技能不在普通刷新中把旧站隐式迁移到新模板。
+
+## 最终回复
+
+按本次实际运行结果说明结论、对象与完成的范围、关键依据、发现或产物、未执行范围和下一步。内容来自本次领域判断、命令输出、证明或站点检查结果；已有证明和报告文件继续按原约定使用，不额外要求新建文件。没有对应内容时省略，不要制造空栏目。
+
+旧证明只转述该文件所记目标和当时结论，不能写成对当前项目的复查。机械检查只按机械范围说明，不能写成中文语义通过。记录失败、未完成或无法开展检查的证明，按该证明当时的结论说明，不能写成项目通过。未执行的步骤按未执行说明。

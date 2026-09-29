@@ -25,8 +25,32 @@ description: skill-family-docs 插件的能力导览。说明六个技能各管�
 
 ## 与渲染包的边界
 
-`public-release.json` 决定渲染哪个项目。新站使用 `site.format: "markdown-v1"` 和 `site.template: "editorial"`；`pages.json` 是页面 ID、分组、顺序、职责和阅读路径的唯一清单，正文保存在 `<id>.md`。渲染包的 `--check-project --repo <name>` 执行只读项目检查。
+`public-release.json` 决定渲染哪个项目。新站使用 `site.format: "markdown-v1"` 和 `site.template: "editorial"`；`pages.json` 是页面 ID、分组、顺序、职责和阅读路径的唯一清单，正文保存在 `<id>.md`。
+
+渲染包的 `--check-project --repo <name>` 执行只读机械项目检查。项目还没有网站配置时，扫描停在现有失败原因，不会初始化或创建站点。
+
+需要共同证明或读取本族旧证明时，使用 `skill-family-doc-render@0.5.0`。先在官方 npm 确认该精确版本可用，再执行下面的命令。已发布的 `0.4.5` 没有 `--conclusion-output` 和 `--read-proof`。这些示例说明本版用法；发布、Hub 登记和四个宿主的新回复以官方记录为准。
+
+扫描时在目标 `public-release.json` 所在目录运行：
+
+```bash
+npx skill-family-doc-render@0.5.0 --check-project --repo <name> --conclusion-output <绝对路径>
+```
+
+读取旧证明可以在任意工作目录运行：
+
+```bash
+npx skill-family-doc-render@0.5.0 --read-proof --proof-root <root> --proof <相对路径>
+```
+
+`--read-proof` 只用调用方给出的 proof-root 和该根内相对路径。它不读 `public-release.json`，不要求站点配置，也不重新扫描目标。旧证明只记录原目标当时的结论。
+
+扫描、读证和刷新都不会隐式整改、建站或执行目标 hook。渲染器证明只覆盖机械范围，链接检查通过不能代替正文审阅。记载未通过、未完成或未能开展检查的证明，结论保持为未通过。本地候选上已有的出证和读证验证，仍只覆盖当时的机械范围。
 
 未声明 `site.format` 的旧项目仍走 HTML 兼容路径。已有自定义渲染器时，setup 区分保留现状、兼容接入、有冲突和显式迁移，不以“不适用”结束，也不修复原渲染器。只有用户明确选择迁移或调整结构时，技能才修改清单、格式或模板。
 
 本插件不发布软件，不更新宿主安装，也不把本地版本当成已发布证据。
+
+## 回复时说明入口
+
+完成导览后，用几句话说明本次适用入口、选择依据、最短下一步和必要限制。内容来自用户请求与上文边界，没有对应事实时省略该项，不要套用固定栏目标题。
