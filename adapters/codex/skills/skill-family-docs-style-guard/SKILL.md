@@ -31,6 +31,37 @@ description: 公开知识站中文正文的事实、理解与表达审校入口�
 
 新格式的 Markdown 不写一级标题，因为页面 `title` 由 `pages.json` 统一生成。二至四级标题可以在末尾声明 `{#id}` 作为稳定锚点。提示词使用 `prompt` 代码块；备注只使用 `NOTE`、`TIP` 或 `WARNING` 类型。正文不输入原始 HTML、MDX、样式或脚本。
 
+事实检查和理解检查完成之后，若本次属于起草、内容刷新或显式整篇重写，可以按下面的合同调用随技能分发的外发表达脚本。外发表达是消费者可选配置能力，不能代替本技能的三道门。`check-style.mjs` 不调用该脚本，也不联网。
+
+### 外发前提示
+
+首次把正文发到外部服务之前，向用户声明：正文将发送到其配置的 endpoint，本技能不承诺该服务的留存或训练策略。脚本没有交互能力，提示由本业务工作流执行。endpoint 由用户自行配置，提示不承诺该服务侧的策略，也不在每次调用时再做交互确认。
+
+### 调用命令
+
+在技能根目录运行。配置只使用三项：endpoint、model、凭据环境变量名。进程环境变量为 `SKILL_FAMILY_DOCS_ENDPOINT`、`SKILL_FAMILY_DOCS_MODEL`、`SKILL_FAMILY_DOCS_CREDENTIAL_ENV`（其值为存放凭据的环境变量名）。凭据值只从该名称对应的进程环境读取，禁止作为命令行参数传入。不把任何具体模型标识写成消费者默认前提。
+
+```bash
+node scripts/expression-outbound.mjs --input 稿件.md --output /绝对仓外路径/candidate.md
+```
+
+需要写作上下文时增加 `--context 上下文.md`。`--timeout-ms` 为运行期控制参数（默认 60s），不属消费者配置面。`--output` 必须是仓库外的绝对路径，通常放在系统临时目录。脚本把候选写到该路径，并在标准输出打印固定状态 JSON。状态只有 `candidate-produced`、`not-configured`、`failed` 三类；失败原因类包括缺配置项、HTTP 状态、超时、不可解析、截断。完整原因类以脚本输出 JSON 的 reasonClass 为准。失败即停，不重试。脚本没有接受权，也不做漂移检测或风格判定。
+
+### 双路径报告
+
+交付报告必须分开写明两个字段：
+
+- 外发表达步骤状态：`candidate-produced`、`not-configured` 或 `failed`（并写明原因类）
+- 宿主表达检查状态：按本技能事实、理解、表达三道门及检测器的实际结果
+
+禁止把这两项混写成一项。禁止把宿主完成的表达检查标注为外发表达已通过。未配置 endpoint、model 或凭据环境时，外发表达未执行；业务工作流仍须完成本技能既有三道门，并写明「外发表达未执行（原因：未配置 endpoint/model/凭据环境）」。完成声明不得包含未执行的外发表达。缺配置时允许继续交付起草或刷新。
+
+脚本失败、超时、非 2xx、空响应、不可解析或截断时，保留原稿字节，不接受候选，外发表达步骤记为 `failed`。此时可以用宿主继续完成表达检查，但必须先声明外发表达未完成。
+
+候选默认落在仓外临时目录。经事实、理解、硬禁、链接、数字和身份核对后，才由 render-site 既有写路径写入 `site.dir`。未接受则工作区继续使用原稿。
+
+纯渲染、`--check-project`、`--read-proof`、`--status`、`--refresh-coverage`、发布文档钩子、`check:release-docs`、`npm run verify`、setup、site-design、help、quickstart 自身以及 `check-style.mjs` 均不调用外发脚本。本脚本随插件源码提供，不等于已发布能力，也不构成表达质量保证。
+
 ## 检测器
 
 长篇 Markdown 或旧 HTML 页面可以运行：

@@ -5,7 +5,7 @@ description: skill-family-docs 插件的能力导览。说明六个技能各管�
 
 # skill-family-docs 能力导览
 
-本插件让 Agent 用受限 Markdown 维护公开知识站。LLM（大语言模型）只负责有依据的正文；精确版本的 `skill-family-doc-render` 负责 `editorial` 模板、导航、样式、交互、扫描和确定性输出。新站不需要手写 HTML、CSS 或 JavaScript。
+本插件让 Agent 用受限 Markdown 维护公开知识站。正文由 style-guard 的事实、理解和表达三道门核对；起草或刷新时，若消费者配置了 endpoint、model 和凭据环境，可以把正文发到该服务产出候选，候选仍须经三道门核对后才写入站点。外发表达随插件源码提供，不等于已发布能力，也不构成表达质量保证。纯渲染、只读检查和发布钩子不调用外发脚本。精确版本的 `skill-family-doc-render` 负责 `editorial` 模板、导航、样式、交互、扫描和确定性输出。新站不需要手写 HTML、CSS 或 JavaScript。
 
 ## 六个技能
 
@@ -29,18 +29,18 @@ description: skill-family-docs 插件的能力导览。说明六个技能各管�
 
 渲染包的 `--check-project --repo <name>` 执行只读机械项目检查。项目还没有网站配置时，扫描停在现有失败原因，不会初始化或创建站点。
 
-需要共同证明或读取本族旧证明时，使用 `skill-family-doc-render@0.5.0`。先在官方 npm 确认该精确版本可用，再执行下面的命令。已发布的 `0.4.5` 没有 `--conclusion-output` 和 `--read-proof`。这些示例说明本版用法；发布、Hub 登记和四个宿主的新回复以官方记录为准。
+需要共同证明或读取本族旧证明时，使用 `skill-family-doc-render@0.6.0`。先在官方 npm 确认该精确版本可用，再执行下面的命令。已发布的 `0.4.5` 没有 `--conclusion-output` 和 `--read-proof`。这些示例说明本版用法；发布、Hub 登记和四个宿主的新回复以官方记录为准。
 
 扫描时在目标 `public-release.json` 所在目录运行：
 
 ```bash
-npx skill-family-doc-render@0.5.0 --check-project --repo <name> --conclusion-output <绝对路径>
+npx skill-family-doc-render@0.6.0 --check-project --repo <name> --conclusion-output <绝对路径>
 ```
 
 读取旧证明可以在任意工作目录运行：
 
 ```bash
-npx skill-family-doc-render@0.5.0 --read-proof --proof-root <root> --proof <相对路径>
+npx skill-family-doc-render@0.6.0 --read-proof --proof-root <root> --proof <相对路径>
 ```
 
 `--read-proof` 只用调用方给出的 proof-root 和该根内相对路径。它不读 `public-release.json`，不要求站点配置，也不重新扫描目标。旧证明只记录原目标当时的结论。

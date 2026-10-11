@@ -2,7 +2,7 @@
 
 `skill-family-docs` 是面向 Claude Code、Codex、Kimi Code 与 WorkBuddy / CodeBuddy 的公开知识站技能插件。它让 Agent 用受限 Markdown 准备项目、首次生成知识站、按产品变化刷新内容，或只按现有源重新渲染。
 
-插件不包含渲染实现。精确版本的 npm 包 `skill-family-doc-render` 读取 `public-release.json`，使用包内 `editorial` 模板生成完整 HTML、CSS、静态搜索和浏览器交互。LLM（大语言模型）只更新有来源支持的正文。
+插件不包含渲染实现。精确版本的 npm 包 `skill-family-doc-render` 读取 `public-release.json`，使用包内 `editorial` 模板生成完整 HTML、CSS、静态搜索和浏览器交互。正文由 style-guard 三道门核对；起草或刷新时，消费者可选用随插件分发的外发表达脚本产出候选，候选须经事实、理解和硬禁核对后才写入。外发表达不是已发布能力，也不构成表达质量保证。纯渲染和发布检查不调用该脚本。
 
 ## 六个技能
 
@@ -35,20 +35,20 @@ Claude Code 与 WorkBuddy / CodeBuddy 从插件根目录的 `skills/` 加载六�
 
 该片段不代替项目的版本源和覆盖输入。`pages.json` 保存站点元数据、导航分组、页面 ID、标题、职责、版式和顺序；正文保存在 `<id>.md`。模板负责站点样式和脚本，项目不自定义 CSS、JavaScript 或 HTML 组件。
 
-扫描、渲染、覆盖状态和刷新覆盖快照在 `public-release.json` 所在目录运行。先在官方 npm 确认 `skill-family-doc-render@0.5.0` 可用，再执行本版命令。已发布的 `0.4.5` 没有 `--conclusion-output` 和 `--read-proof`。
+扫描、渲染、覆盖状态和刷新覆盖快照在 `public-release.json` 所在目录运行。先在官方 npm 确认 `skill-family-doc-render@0.6.0` 可用，再执行本版命令。已发布的 `0.4.5` 没有 `--conclusion-output` 和 `--read-proof`。
 
 ```bash
-npx skill-family-doc-render@0.5.0 --repo <name>
-npx skill-family-doc-render@0.5.0 --check-project --repo <name>
-npx skill-family-doc-render@0.5.0 --check-project --repo <name> --conclusion-output /absolute/path/conclusion.json
-npx skill-family-doc-render@0.5.0 --status --repo <name>
-npx skill-family-doc-render@0.5.0 --refresh-coverage --repo <name>
+npx skill-family-doc-render@0.6.0 --repo <name>
+npx skill-family-doc-render@0.6.0 --check-project --repo <name>
+npx skill-family-doc-render@0.6.0 --check-project --repo <name> --conclusion-output /absolute/path/conclusion.json
+npx skill-family-doc-render@0.6.0 --status --repo <name>
+npx skill-family-doc-render@0.6.0 --refresh-coverage --repo <name>
 ```
 
 读取旧证明使用同一精确版本，可在任意工作目录运行：
 
 ```bash
-npx skill-family-doc-render@0.5.0 --read-proof --proof-root /absolute/proof-root --proof relative/conclusion.json
+npx skill-family-doc-render@0.6.0 --read-proof --proof-root /absolute/proof-root --proof relative/conclusion.json
 ```
 
 `--check-project` 只做机械检查：输入与公开安全、覆盖、内存渲染与磁盘基线、内部链接和资源。它不靠重新渲染让检查通过，也不执行目标脚本或 hook。项目还没有网站配置时，扫描停在现有失败原因，不会初始化或建站。只有同时给出 `--conclusion-output` 时才排他写入一份共同证明；不带该参数时不额外写文件。
@@ -77,7 +77,7 @@ node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 
 
 仓库中的 `package.json` 是插件本地源版本。它不能证明该版本已发布、已被 Hub 登记或已安装到宿主。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，才可声称该版本能从 Hub 获取；宿主是否生效仍以安装记录为准。
 
-当前源包版本为 0.5.0，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。从 Hub 安装前，先核对 Skill Family Hub 是否已经登记这一精确版本。
+当前源包版本为 0.6.0，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。已发布并可从 Hub 安装的坐标仍以官方登记为准，下文安装示例使用已发布的 `0.5.0`。从 Hub 安装前，先核对 Skill Family Hub 是否已经登记目标精确版本。
 
 完成上述发布和登记后，Claude Code 可从 Skill Family Hub 安装 0.5.0：
 
@@ -106,10 +106,10 @@ codebuddy plugin marketplace add ifoohoo/skill-family-hub
 codebuddy plugin install skill-family-docs@0.5.0
 ```
 
-WorkBuddy 桌面端从插件面板添加同一市场并安装该版本。安装或升级后重启客户端，即可在斜杠菜单中直接选择六个技能入口。站点渲染器是独立 npm 包。项目需要 CLI 时，先在官方 npm 确认 `skill-family-doc-render@0.5.0` 可用，再精确安装：
+WorkBuddy 桌面端从插件面板添加同一市场并安装该版本。安装或升级后重启客户端，即可在斜杠菜单中直接选择六个技能入口。站点渲染器是独立 npm 包。项目需要 CLI 时，先在官方 npm 确认 `skill-family-doc-render@0.6.0` 可用，再精确安装：
 
 ```bash
-npm install --save-exact skill-family-doc-render@0.5.0
+npm install --save-exact skill-family-doc-render@0.6.0
 ```
 
 ## 最小示例
