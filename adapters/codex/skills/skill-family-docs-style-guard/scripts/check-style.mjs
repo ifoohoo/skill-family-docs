@@ -188,10 +188,12 @@ function lineForRule(rule, line, html) {
 
 function checkFile(path) {
   const raw = readFileSync(path, 'utf8');
-  const prose = proseFor(path, raw);
+  // HTML 注释不属于可见正文；按等长空白屏蔽，保留诊断行号和正文规则。
+  const visibleRaw = raw.replace(/<!--[\s\S]*?-->/g, (comment) => comment.replace(/[^\n]/g, ' '));
+  const prose = proseFor(path, visibleRaw);
   const html = /\.html?$/i.test(path);
   const proseLines = prose.split('\n');
-  const rawLines = raw.split('\n');
+  const rawLines = visibleRaw.split('\n');
   const findings = [];
 
   for (const rule of RULES) {
@@ -242,7 +244,7 @@ function checkFile(path) {
 
   const statWarnings = [];
   if (n >= 8 && cv < 0.42) statWarnings.push(`句长变异系数 ${cv.toFixed(2)} < 0.42，句长过于整齐`);
-  if (connPerK > 7) statWarnings.push(`连词密度 ${connPerK.toFixed(1)}/千字 > 7，可删一半`);
+  if (connPerK > 7) statWarnings.push(`连词密度 ${connPerK.toFixed(1)}/千字 > 7，回到读者任务核对关系、重复和必要条件`);
   if (longRate > 0.35) statWarnings.push(`长句率 ${(longRate * 100).toFixed(0)}% 偏高，逐句检查是否多判断`);
 
   return {

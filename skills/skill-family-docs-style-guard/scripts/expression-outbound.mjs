@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: Apache-2.0
-// expression-outbound.mjs — style-guard 可选外发表达脚本。
+// expression-outbound.mjs — style-guard 拟稿主流程的单次模型调用脚本。
 // 纯 Node 内置模块。读稿件 → 调消费者配置的 OpenAI 兼容服务 → 把候选写到仓外路径 → 打印状态 JSON。
 // 无接受权、无重试、无漂移检测、无风格判定。凭据值只从进程环境读取，禁止 CLI 传入。
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, isAbsolute, relative, resolve } from 'node:path';
+import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { basename, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const thisFile = fileURLToPath(import.meta.url);
@@ -150,7 +150,7 @@ function parseArgs(argv) {
 }
 
 function findGitRoot(start) {
-  let dir = resolve(start);
+  let dir = realpathSync(resolve(start));
   for (;;) {
     if (existsSync(resolve(dir, '.git'))) return dir;
     const parent = dirname(dir);
@@ -162,16 +162,33 @@ function findGitRoot(start) {
 function isInside(child, parent) {
   if (!parent) return false;
   const rel = relative(resolve(parent), resolve(child));
-  return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel));
+  return rel === '' || (rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel));
 }
 
 function readRegularFile(path, label) {
   if (!path) return { error: `${label} 缺失。` };
   const abs = resolve(path);
-  if (!existsSync(abs) || !statSync(abs).isFile()) {
-    return { error: `${label} 不存在或不是普通文件。` };
+  try {
+    const realAbs = realpathSync(abs);
+    if (!statSync(realAbs).isFile()) return { error: `${label} 不存在或不是普通文件。` };
+    return { abs, realAbs, text: readFileSync(realAbs, 'utf8') };
+  } catch {
+    return { error: `${label} 不存在、不是普通文件或无法读取。` };
   }
-  return { abs, text: readFileSync(abs, 'utf8') };
+}
+
+// 输出可以含尚未创建的目录；从最近现存父目录的真实路径推导实际写入位置。
+function realOutputPath(outputAbs) {
+  let parent = dirname(outputAbs);
+  const pending = [basename(outputAbs)];
+  while (!lstatSync(parent, { throwIfNoEntry: false })) {
+    pending.unshift(basename(parent));
+    const next = dirname(parent);
+    if (next === parent) throw new Error('output-parent');
+    parent = next;
+  }
+  if (!statSync(parent).isDirectory()) throw new Error('output-parent');
+  return resolve(realpathSync(parent), ...pending);
 }
 
 function completionsUrl(endpoint) {
@@ -258,19 +275,24 @@ async function main(argv) {
       '--output 必须是仓库外的绝对路径。',
     );
   }
-  const blockedRoots = [
-    skillRoot,
-    findGitRoot(skillRoot),
-    findGitRoot(process.cwd()),
-  ];
-  if (blockedRoots.some((root) => isInside(outputAbs, root))) {
-    return fail(
-      result({ status: STATUS.FAILED, reasonClass: REASON.IN_REPO_OUTPUT }),
-      '候选不得写入技能树、当前工作目录或 Git 仓库内。',
-    );
-  }
-  if (outputAbs === input.abs) {
-    return fail(result({ status: STATUS.FAILED, reasonClass: REASON.INVALID_INPUT }), '--output 不能与 --input 相同。');
+  let outputReal;
+  try {
+    const blockedRoots = [skillRoot, findGitRoot(skillRoot), findGitRoot(process.cwd())].filter(Boolean);
+    outputReal = realOutputPath(outputAbs);
+    if (blockedRoots.some((root) => isInside(outputAbs, root) || isInside(outputReal, realpathSync(root)))) {
+      return fail(
+        result({ status: STATUS.FAILED, reasonClass: REASON.IN_REPO_OUTPUT }),
+        '候选实际路径不得写入技能树或 Git 仓库内。',
+      );
+    }
+    if (outputReal === input.realAbs) {
+      return fail(result({ status: STATUS.FAILED, reasonClass: REASON.INVALID_INPUT }), '--output 不能与 --input 指向同一原稿。');
+    }
+    if (lstatSync(outputAbs, { throwIfNoEntry: false })) {
+      return fail(result({ status: STATUS.FAILED, reasonClass: REASON.INVALID_INPUT }), '候选输出已存在或是链接，请选择新的仓外路径。');
+    }
+  } catch {
+    return fail(result({ status: STATUS.FAILED, reasonClass: REASON.INVALID_INPUT }), '无法核对候选输出的实际父目录。');
   }
 
   const endpoint = parsed.endpoint || process.env[ENV_ENDPOINT];
@@ -309,7 +331,7 @@ async function main(argv) {
     messages: [
       {
         role: 'system',
-        content: '根据稿件和写作上下文产出完整候选正文。只输出候选全文，不要解释，不要包裹代码围栏，不要复述凭据或内部路径。不得改变冻结事实：版本、路径、命令、状态、授权、链接、数字与身份。',
+        content: '按写作上下文指定的当前任务产出候选：任务可以是全文大纲或当前完整语义单元的正文。只输出当前任务要求的候选，不输出编辑说明或自评，不复述已接受前文，不把全文材料缩成摘要。上下文中的角色、读者、阅读任务、审核大纲、写作范围和最新裁决决定本次范围；原材料提供事实，已接受前文只用于衔接。角色、读者和审核说明是编排信息，不要把它们写成新的业务资格或前置要求；只拟写当前材料，不复制整篇大纲的其他节。标题和自然语言可以重组，但不得丢失或改变条件、例外、限制强度、版本来源、命令、配置、状态、授权、链接、数字、入口身份、代码、图表信息与稳定锚点。不要用其他技能入口替换原入口，不要补造事实或复述凭据。正文不额外包裹代码围栏，材料内已有的代码块保留。',
       },
       {
         role: 'user',
@@ -378,8 +400,8 @@ async function main(argv) {
   }
 
   try {
-    mkdirSync(dirname(outputAbs), { recursive: true });
-    writeFileSync(outputAbs, candidate.text, 'utf8');
+    mkdirSync(dirname(outputReal), { recursive: true });
+    writeFileSync(outputReal, candidate.text, { encoding: 'utf8', flag: 'wx' });
   } catch {
     return fail(
       result({ status: STATUS.FAILED, reasonClass: REASON.CONNECTION, httpStatus }),
@@ -396,7 +418,8 @@ async function main(argv) {
   return 0;
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === thisFile) {
+if (process.argv[1] && existsSync(process.argv[1])
+  && realpathSync(process.argv[1]) === realpathSync(thisFile)) {
   const code = await main(process.argv.slice(2));
   process.exitCode = code;
 }

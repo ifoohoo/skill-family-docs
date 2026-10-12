@@ -5,7 +5,9 @@ description: skill-family-docs 插件的能力导览。说明六个技能各管�
 
 # skill-family-docs 能力导览
 
-本插件让 Agent 用受限 Markdown 维护公开知识站。正文由 style-guard 的事实、理解和表达三道门核对；起草或刷新时，若消费者配置了 endpoint、model 和凭据环境，可以把正文发到该服务产出候选，候选仍须经三道门核对后才写入站点。外发表达随插件源码提供，不等于已发布能力，也不构成表达质量保证。纯渲染、只读检查和发布钩子不调用外发脚本。精确版本的 `skill-family-doc-render` 负责 `editorial` 模板、导航、样式、交互、扫描和确定性输出。新站不需要手写 HTML、CSS 或 JavaScript。
+本插件让 Agent 用受限 Markdown 维护公开知识站。起草或刷新由 style-guard 组织脚本拟稿：宿主明确事实、读者和任务，审核大纲，按完整语义单元顺序拟稿并传入已接受前文，最后核收全文。安装者可选择 OpenAI 兼容服务、模型和 key 的环境变量来源。缺配置、失败或候选未接受时保留原稿，报告表达优化未完成。纯渲染、只读检查和发布钩子不调用模型。
+
+精确版本的 `skill-family-doc-render` 负责 `editorial` 模板、导航、样式、交互、扫描和确定性输出，新站不需要手写 HTML、CSS 或 JavaScript。0.6.0 已分发可配置表达脚本；本次主流程替换仍是本地候选，正式发布和宿主更新各自核实。模型输出与检测器退出 0 都不能代替语义和可读性验收。
 
 ## 六个技能
 
@@ -13,7 +15,7 @@ description: skill-family-docs 插件的能力导览。说明六个技能各管�
 - `skill-family-docs-setup`：先只读诊断。缺项可安全处理时给出精确计划、影响和授权问题；只有用户明确同意已展示且复核未漂移的计划后，才执行授权范围内的本地配置。
 - `skill-family-docs-quickstart`：根据意图选择其他五个技能，并在同一轮把请求交给目标技能继续执行；它不重复目标技能的业务逻辑。
 - `skill-family-docs-render-site`：处理首次生成、内容刷新、纯渲染，以及用户明确要求的目录调整或模板升级。
-- `skill-family-docs-style-guard`：用事实、理解和表达三道检查审校中文技术内容。
+- `skill-family-docs-style-guard`：组织大纲与脚本拟稿，核收事实、理解和表达；只读审校不改稿。
 - `skill-family-docs-site-design`：验收固定 `editorial` 主题的阅读与交互体验。
 
 ## 最短使用路径

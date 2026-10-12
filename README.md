@@ -2,7 +2,7 @@
 
 `skill-family-docs` 是面向 Claude Code、Codex、Kimi Code 与 WorkBuddy / CodeBuddy 的公开知识站技能插件。它让 Agent 用受限 Markdown 准备项目、首次生成知识站、按产品变化刷新内容，或只按现有源重新渲染。
 
-插件不包含渲染实现。精确版本的 npm 包 `skill-family-doc-render` 读取 `public-release.json`，使用包内 `editorial` 模板生成完整 HTML、CSS、静态搜索和浏览器交互。正文由 style-guard 三道门核对；起草或刷新时，消费者可选用随插件分发的外发表达脚本产出候选，候选须经事实、理解和硬禁核对后才写入。外发表达不是已发布能力，也不构成表达质量保证。纯渲染和发布检查不调用该脚本。
+插件不包含渲染实现。精确版本的 npm 包 `skill-family-doc-render` 读取 `public-release.json`，使用包内 `editorial` 模板生成完整 HTML、CSS、静态搜索和浏览器交互。起草与刷新通过 style-guard 的脚本拟稿流程完成：宿主整理事实和读者任务、审核大纲，再顺序拟稿并传入已接受前文；全文通过事实、理解、图文和硬禁核对后才写入。安装者自行选择 OpenAI 兼容服务、模型和 key 的环境变量来源。缺配置、调用失败或候选未接受时保留原稿，报告表达优化未完成。纯渲染和发布检查不调用模型。0.6.0 已分发可配置脚本；本次主流程替换仍是本地候选，完成新版本发布与宿主更新后才生效。
 
 ## 六个技能
 
@@ -10,7 +10,7 @@
 - `skill-family-docs-setup`：先只读诊断；缺项可安全处理时，展示精确计划和影响并询问是否执行。用户明确同意已展示且复核未漂移的计划后，才补齐当前项目的本地配置。
 - `skill-family-docs-quickstart`：按用户意图选择目标技能，并在同一轮把请求交给目标技能继续执行；它不重复目标技能的业务逻辑。
 - `skill-family-docs-render-site`：处理首次生成、内容刷新、纯渲染，以及显式的目录调整或模板升级。
-- `skill-family-docs-style-guard`：用事实、理解和表达三道检查审校中文正文。
+- `skill-family-docs-style-guard`：组织材料、审核大纲、调用脚本顺序拟稿，并核对接受稿的事实、理解与表达。
 - `skill-family-docs-site-design`：验收 `editorial` 模板的导航、阅读、搜索、复制、主题、键盘和窄屏体验。
 
 Claude Code 与 WorkBuddy / CodeBuddy 从插件根目录的 `skills/` 加载六个技能，避免同一个插件同时发现根技能和 Claude adapter。Codex 与 Kimi Code 继续使用各自的 adapter 目录。四份 adapter 仍保留为宿主投影，六个同名技能及 style-guard 的配套文件必须逐字节一致。`npm run check:adapters` 同时检查根技能投影、四份 adapter 的载荷闭包与逻辑映射，以及包版本与四份插件清单、四份平台清单的版本一致性。
@@ -63,9 +63,27 @@ npx skill-family-doc-render@0.6.0 --read-proof --proof-root /absolute/proof-root
 
 未声明 `site.format` 的旧项目仍使用旧格式兼容路径。只有显式迁移请求才修改格式、清单或模板。
 
-## 风格检测器
+## 表达服务与辅助检测器
 
-style-guard 附带一个纯 Node 检测器，可以检查 Markdown 和旧 HTML `<main>` 正文：
+需要配置起草、刷新或整篇重写使用的表达服务时，可调用 `skill-family-docs-setup`。站点接入与表达服务配置需分别检查。起草、刷新或整篇重写操作依赖表达服务配置；仅重新渲染、机械检查、读取证明、覆盖检查与刷新、治理及发布检查无需模型配置。
+
+请用户自行选择 OpenAI 兼容服务的 base URL（基础地址）与模型，并在自己的 shell 中配置以下三项。示例地址与模型名仅用于说明格式，必须替换为用户选定的值；第三项仅为存放 API key 的环境变量名，非 key 本身。
+
+```bash
+export SKILL_FAMILY_DOCS_ENDPOINT='https://api.example.com/v1'
+export SKILL_FAMILY_DOCS_MODEL='your-selected-model'
+export SKILL_FAMILY_DOCS_CREDENTIAL_ENV='MY_DOCS_API_KEY'
+```
+
+实际 API key 应由用户在自己的 shell 或已有安全来源中设置并导出至 `MY_DOCS_API_KEY`；若使用其他变量名，需同步更新第三项。严禁将 key 发送至聊天、写入项目文件或日志，亦不可作为命令行参数传入。`setup` 不读取认证文件或用户级模型配置，不自动编辑 shell 配置，也不从 `LLM_*` 环境变量自动补齐三项。服务与模型不绑定默认值或特定提供者。
+
+`setup` 在当前进程检查三项配置与所引用的 key 是否存在、非空，以及凭据变量名是否合法；结果只显示检查项状态，不显示任何变量值。该检查不联网、不读取文稿、不写文件，也不验证服务可达性、key 有效性或模型可用性。表达配置缺项只阻断起草、刷新与整篇重写，不阻断纯渲染或治理检查。
+
+临时 `export` 仅影响当前 shell 及其后续启动的子进程。用户自行修改可信的 shell 配置后，需重新加载该配置；已启动的宿主进程不会自动继承新配置。退出宿主后从已配置的环境重新启动，或按宿主正常方式重启并核对实际进程配置。仅新开任务无法保证环境已更新。
+
+本地配置齐全不表示已完成模型调用；首次真正外发仍由 `skill-family-docs-style-guard` 说明材料将发送至所配置服务，并沿既有授权与候选核收流程执行。
+
+style-guard 另附纯 Node 检测器，检查 Markdown 和旧 HTML `<main>` 正文：
 
 ```bash
 node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 稿件.md 页面.html
@@ -75,11 +93,11 @@ node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 
 
 ## 安装与版本边界
 
-仓库中的 `package.json` 是插件本地源版本。它不能证明该版本已发布、已被 Hub 登记或已安装到宿主。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，才可声称该版本能从 Hub 获取；宿主是否生效仍以安装记录为准。
+`package.json` 中的版本号只表示本地源包版本，不能证明该版本已正式发布、由 Hub 登记或已在宿主中生效。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，才可声称能从 Hub 获取；宿主是否加载仍以实际安装记录为准。
 
-当前源包版本为 0.6.0，八份插件和平台清单与它保持一致。该表述不构成发布或宿主生效证据。已发布并可从 Hub 安装的坐标仍以官方登记为准，下文安装示例使用已发布的 `0.5.0`。从 Hub 安装前，先核对 Skill Family Hub 是否已经登记目标精确版本。
+当前源包、四份插件清单和四份平台清单已对齐为本地 0.6.1 候选，正式发布、Hub 登记和宿主更新尚未完成。0.6.0 已完成正式发布并由 Skill Family Hub 登记，下方安装示例仍使用已验证的 0.6.0。不能依据源版本变更或目录同步断言宿主已加载新内容，也不推断各宿主当前运行的版本。
 
-完成上述发布和登记后，Claude Code 可从 Skill Family Hub 安装 0.5.0：
+Claude Code 可从 Skill Family Hub 安装插件：
 
 ```text
 /plugin marketplace add ifoohoo/skill-family-hub
@@ -93,7 +111,7 @@ codex plugin marketplace add ifoohoo/skill-family-hub
 codex plugin add skill-family-docs@skill-family-hub
 ```
 
-Kimi Code 先添加 Hub，再从插件浏览器安装 `skill-family-docs@0.5.0`：
+Kimi Code 先添加 Hub，再从插件浏览器安装 `skill-family-docs@0.6.0`：
 
 ```text
 /plugins marketplace https://raw.githubusercontent.com/ifoohoo/skill-family-hub/main/kimi-marketplace.json
@@ -103,7 +121,7 @@ CodeBuddy 也使用同一 Hub：
 
 ```bash
 codebuddy plugin marketplace add ifoohoo/skill-family-hub
-codebuddy plugin install skill-family-docs@0.5.0
+codebuddy plugin install skill-family-docs@0.6.0
 ```
 
 WorkBuddy 桌面端从插件面板添加同一市场并安装该版本。安装或升级后重启客户端，即可在斜杠菜单中直接选择六个技能入口。站点渲染器是独立 npm 包。项目需要 CLI 时，先在官方 npm 确认 `skill-family-doc-render@0.6.0` 可用，再精确安装：
