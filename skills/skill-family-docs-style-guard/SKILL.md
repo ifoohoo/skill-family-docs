@@ -62,7 +62,9 @@ node scripts/expression-outbound.mjs --input 材料.md --context 上下文.md --
 
 候选已产出但未接受，整体仍未完成。只读审校仅按实际审阅范围报告，不伪称执行了拟稿流程。已核对且无需改写的部分可保留，完成依据为是否符合读者任务与事实，而非采纳数量。
 
-纯渲染、`--check-project`、`--read-proof`、`--status`、`--refresh-coverage`、发布文档钩子、`check:release-docs`、setup、site-design、help、quickstart 自身及 `check-style.mjs` 均不向消费者的外部表达服务发起请求，也不通过这些操作修改文案。`npm run verify` 的业务检查同样不外发或改稿；其聚合测试采用隔离配置与本地 mock 调用表达脚本，不继承消费者的服务配置或凭据。 quickstart 路由后的起草或刷新由目标技能执行拟稿流程。 0.6.0 版本已分发可配置脚本，但当前主流程修改为未发布候选，不宣称现有宿主已经完成本次更新。
+纯渲染、`--check-project`、`--read-proof`、`--status`、`--refresh-coverage`、发布文档钩子、`check:release-docs`、setup、site-design、help、quickstart 自身及 `check-style.mjs` 均不向消费者的外部表达服务发起请求，也不通过这些操作修改文案。`npm run verify` 的业务检查同样不外发或改稿；其聚合测试采用隔离配置与本地 mock 调用表达脚本，不继承消费者的服务配置或凭据。quickstart 路由后的起草或刷新由目标技能执行拟稿流程。
+
+0.6.0 版本已分发可配置脚本；本文描述的顺序拟稿主流程已随 0.6.1 正式发布并分发。各宿主是否已更新并加载该版本，仍需分别核验，不据此宣称宿主更新或加载验证已完成。
 
 ## 辅助检测器
 
