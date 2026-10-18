@@ -18,6 +18,8 @@ description: skill-family-docs 插件的能力导览。说明六个技能各管�
 - `skill-family-docs-style-guard`：组织大纲与脚本拟稿，核收事实、理解和表达；只读审校不改稿。
 - `skill-family-docs-site-design`：验收固定 `editorial` 主题的阅读与交互体验。
 
+在选择安装/升级组合或了解验证限制时，请查阅 [README支持范围](https://github.com/ifoohoo/skill-family-docs#support-scope)。
+
 ## 最短使用路径
 
 1. 检查环境时，调用 `skill-family-docs-setup`。环境已就绪时直接返回；存在缺项时，setup 先展示精确计划和影响，再询问是否执行。
@@ -31,7 +33,7 @@ description: skill-family-docs 插件的能力导览。说明六个技能各管�
 
 渲染包的 `--check-project --repo <name>` 执行只读机械项目检查。项目还没有网站配置时，扫描停在现有失败原因，不会初始化或创建站点。
 
-需要共同证明或读取本族旧证明时，使用 `skill-family-doc-render@0.6.0`。先在官方 npm 确认该精确版本可用，再执行下面的命令。已发布的 `0.4.5` 没有 `--conclusion-output` 和 `--read-proof`。这些示例说明本版用法；发布、Hub 登记和四个宿主的新回复以官方记录为准。
+下方两条用于共同证明与读取旧证明的命令使用 `skill-family-doc-render@0.6.0` 精确版本，属于保留的历史用法示例，不代表当前推荐版本或组合。实际选择插件、渲染器与宿主的组合时，请查阅前文的 [README 支持范围](https://github.com/ifoohoo/skill-family-docs#support-scope)。调用前需在官方 npm 确认所选精确版本可用。已发布的 0.4.5 版本不支持 `--conclusion-output` 与 `--read-proof` 参数。正式发布、Hub 登记及宿主实际加载的验证均需依据真实记录，不得从示例命令推导。
 
 扫描时在目标 `public-release.json` 所在目录运行：
 

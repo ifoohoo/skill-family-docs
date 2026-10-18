@@ -13,7 +13,11 @@
 - `skill-family-docs-style-guard`：组织材料、审核大纲、调用脚本顺序拟稿，并核对接受稿的事实、理解与表达。
 - `skill-family-docs-site-design`：验收 `editorial` 模板的导航、阅读、搜索、复制、主题、键盘和窄屏体验。
 
-Claude Code 与 WorkBuddy / CodeBuddy 从插件根目录的 `skills/` 加载六个技能，避免同一个插件同时发现根技能和 Claude adapter。Codex 与 Kimi Code 继续使用各自的 adapter 目录。四份 adapter 仍保留为宿主投影，六个同名技能及 style-guard 的配套文件必须逐字节一致。`npm run check:adapters` 同时检查根技能投影、四份 adapter 的载荷闭包与逻辑映射，以及包版本与四份插件清单、四份平台清单的版本一致性。
+Claude Code 与 WorkBuddy / CodeBuddy 从插件根目录的 `skills/` 加载六个技能，Codex 与 Kimi Code 从各自 adapter 路径加载，加载路径保持不变。六技能正文的唯一编辑源为 `packages/skill-family-docs/skills`，技能正文修改必须在此路径进行。四份 adapter 目录下的 `skills/` 为生成副本，由 `npm run build:adapters` 显式生成，包含 style-guard 配套脚本与参考资料，不得手工修改或新增 `skills-src`。
+
+开发维护者在修改后，需在开发工作区根目录运行 `npm run build:adapters` 生成副本，随后立即执行 `npm run check:adapters` 进行只读核验。该检查比对根 `skills` 与四适配器副本的技能载荷、逻辑映射，以及包版本与四份插件清单、四份平台清单的版本一致性，不生成、不修复、不自愈。构建与检查不修改平台 `manifest`，不安装宿主，不发布，不替代真实宿主安装与业务验收。
+
+> 已安装插件的消费者无需运行任何开发命令，仅需通过正常安装流程使用已发布能力。
 
 ## 使用路径
 
@@ -35,7 +39,7 @@ Claude Code 与 WorkBuddy / CodeBuddy 从插件根目录的 `skills/` 加载六�
 
 该片段不代替项目的版本源和覆盖输入。`pages.json` 保存站点元数据、导航分组、页面 ID、标题、职责、版式和顺序；正文保存在 `<id>.md`。模板负责站点样式和脚本，项目不自定义 CSS、JavaScript 或 HTML 组件。
 
-扫描、渲染、覆盖状态和刷新覆盖快照在 `public-release.json` 所在目录运行。先在官方 npm 确认 `skill-family-doc-render@0.6.0` 可用，再执行本版命令。已发布的 `0.4.5` 没有 `--conclusion-output` 和 `--read-proof`。
+在 `public-release.json` 所在目录运行扫描、渲染、覆盖状态和刷新覆盖快照的命令时，以下 `0.6.0` 命令为历史用法示例，不代表当前推荐组合或建议安装版本。请先通过[支持范围](#support-scope)确认已验证的插件与渲染器组合，实际调用前仍须核实 `skill-family-doc-render@0.6.0` 在官方 npm 中可用。已发布 0.4.5 版本不支持 `--conclusion-output` 和 `--read-proof` 两个参数。
 
 ```bash
 npx skill-family-doc-render@0.6.0 --repo <name>
@@ -95,7 +99,27 @@ node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 
 
 `package.json` 中的版本号只表示本地源包版本，不能证明该版本已正式发布、由 Hub 登记或已在宿主中生效。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，才可声称能从 Hub 获取；宿主是否加载仍以实际安装记录为准。
 
-当前源包、四份插件清单和四份平台清单的版本均为 0.6.5。这是源码坐标；正式发布、Skill Family Hub 登记和宿主加载各以对应的实际记录为准。0.6.0 已完成正式发布并由 Skill Family Hub 登记，下方安装示例仍使用已验证的 0.6.0 版本。不能依据源版本变更或目录同步断言宿主已加载新内容，各宿主当前运行版本需独立核验。
+当前本地源包及四份插件清单、四份平台清单均为 0.6.6 版本。但所有宿主的 0.6.6 原生交付尚未完成验证，本地测试不能替代正式验证。
+
+<a id="support-scope"></a>
+
+### 支持范围
+
+截至 2026-10-18，本次 macOS 环境中已记录的业务验证使用 `skill-family-docs` 插件 0.6.5 与 `skill-family-doc-render` 渲染器 0.6.5 的组合。这些记录只涵盖限定任务，不能据此认定各宿主的全部业务均已通过。
+
+| 宿主 | 实际结果 |
+| --- | --- |
+| Codex | 当前原生会话完成首次接入、首次生成、公开变化刷新、同事实整篇重写、无变化保留、覆盖落后纯渲染和浏览器体验；非独立新CLI进程验证 |
+| Claude Code 2.1.233 | 原生进程执行 `help`、只读审校和检查；`--check` 退出码 0；`--check-project` 因覆盖落后退出 1，项目未通过完整检查 |
+| CodeBuddy CLI 2.158.0 | 原生进程执行 `help`、只读审校和检查；`--check` 退出码 0；`--check-project` 因覆盖落后退出 1，项目未通过完整检查 |
+| Kimi Code 2.2.0 | 加载插件 0.6.5 后执行 `help` 和只读审校；纯渲染业务验证中发现 Git 索引变化，只读边界失败；无法归因具体命令或进程；本地修复未随 0.6.5 交付 |
+| WorkBuddy Desktop 5.8.3 | 插件 0.6.5 已安装并被发现读取，实际调用越过只读边界，受影响业务已暂停；CodeBuddy CLI 结果不能替代桌面端验收 |
+
+所有矩阵之外的组合尚未验证，不等于不支持。升级、暂留 0.6.5 或回退前，须核对插件、渲染器及宿主的匹配组合与已知限制。暂留或回退不会消除 0.6.5 组合的已知限制。回退操作及回退后组合均未实测。
+
+### 历史安装示例
+
+本 README 保留 0.6.0 版本的安装与 CLI 示例说明，用于记录历史用法，不代表当前推荐组合。0.6.0 曾正式发布并由 Hub 登记。带 `@0.6.0` 的精确命令可固定版本；未固定版本的市场命令实际取得的版本需核实安装记录。
 
 Claude Code 可从 Skill Family Hub 安装插件：
 
@@ -171,7 +195,7 @@ packages/skill-family-docs/
   LICENSE
 ```
 
-根 `skills/` 与四个 `adapters/*/skills/` 目录都是手写载荷。改动后运行 `npm run check:adapters`，不用其中一份的通过结果代替其他宿主的真实安装验收。
+根 `skills/` 是唯一编辑源，四份 `adapters/*/skills/` 是生成副本。所有适配器目录下的 `skills/` 由 `build:adapters` 从唯一编辑源显式生成，内容与根路径保持逐字节一致。维护者应依据前文规则操作，不修改生成文件，不新增 `skills-src`。
 
 <!-- release-skill:capability:safe-first-command -->
 > 安全起点：调用 `skill-family-docs-setup`。它先只读诊断；缺项可安全处理时展示精确计划和影响，再询问是否执行。授权前不安装依赖，不改配置，不渲染，不刷新覆盖快照，也不写 MEMORY、缓存或宿主持久状态。
