@@ -97,9 +97,9 @@ node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 
 
 ## 安装与版本边界
 
-`package.json` 中的版本号只表示本地源包版本，不能证明该版本已正式发布、由 Hub 登记或已在宿主中生效。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，才可声称能从 Hub 获取；宿主是否加载仍以实际安装记录为准。
+`package.json` 中的版本号仅表示本地源包版本，不能证明该版本已正式发布、由 Skill Family Hub 登记，或已在宿主中生效。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，方可声称可从 Hub 获取；宿主是否加载仍以实际安装记录为准。
 
-当前本地源包及四份插件清单、四份平台清单均为 0.6.6 版本。但所有宿主的 0.6.6 原生交付尚未完成验证，本地测试不能替代正式验证。
+当前本地源包及四份插件清单、四份平台清单均处于 0.6.7 本地候选状态。npm 查询对象为 `skill-family-doc-render`，已观测 npm latest 为 `0.6.6`；文档插件自身已观测 GitHub 标签为 `skill-family-docs-v0.6.6`，但插件本身不是 npm 分发对象。`0.6.7` 仍为三单元本地联合候选，所有宿主的 0.6.7 原生交付尚未完成验收，本地测试结果不可替代正式验证。
 
 <a id="support-scope"></a>
 

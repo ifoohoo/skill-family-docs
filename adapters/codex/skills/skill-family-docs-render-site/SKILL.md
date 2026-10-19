@@ -75,7 +75,7 @@ description: 公开知识站的信息架构、正文维护与 skill-family-doc-r
 
 ## 命令与失败恢复
 
-扫描、渲染、覆盖状态和刷新覆盖快照在 `public-release.json` 所在目录运行。项目里的 CLI 使用已在官方 npm 确认可用的 `skill-family-doc-render@0.6.0`：
+扫描、渲染、覆盖状态和刷新覆盖快照在 `public-release.json` 所在目录运行。项目里的 CLI 使用已在官方 npm 确认可用的 `skill-family-doc-render@0.6.6`：
 
 ```bash
 skill-family-doc-render --repo <name>
@@ -84,23 +84,23 @@ skill-family-doc-render --status --repo <name>
 skill-family-doc-render --refresh-coverage --repo <name>
 ```
 
-第一条重建目标站点。第二条只读检查公开安全、覆盖、正文规则、渲染一致性、链接和资源。它不重新渲染来让检查通过，也不执行目标脚本或 hook。后两条分别读取和刷新覆盖状态。项目还没有网站配置时，这些扫描和刷新停在现有失败原因，不会初始化或创建站点。
+第一条重建目标站点。第二条只读检查公开安全、覆盖、正文规则、渲染一致性、链接和资源，不重新渲染来让检查通过，也不执行目标脚本或 hook。后两条分别读取和刷新覆盖状态。项目还没有网站配置时，这些扫描和刷新停在现有失败原因，不会初始化或创建站点。
 
-`--conclusion-output` 和 `--read-proof` 属于 `skill-family-doc-render@0.6.0`。先在官方 npm 确认该精确版本可用，再执行。已发布的 `0.4.5` 没有这两个参数。下面的示例说明本版用法；发布、Hub 登记和四个宿主的新回复以官方记录为准。
+`--conclusion-output` 和 `--read-proof` 属于 `skill-family-doc-render@0.6.6`。先在官方 npm 确认该精确版本可用，再执行。已发布的 `0.4.5` 没有这两个参数。下面的示例说明本版用法；发布、Hub 登记和四个宿主的新回复以官方记录为准。
 
 扫描时在目标 `public-release.json` 所在目录运行：
 
 ```bash
-npx skill-family-doc-render@0.6.0 --check-project --repo <name> --conclusion-output /absolute/path/conclusion.json
+npx skill-family-doc-render@0.6.6 --check-project --repo <name> --conclusion-output /absolute/path/conclusion.json
 ```
 
 读取旧证明可以在任意工作目录运行：
 
 ```bash
-npx skill-family-doc-render@0.6.0 --read-proof --proof-root /absolute/proof-root --proof relative/conclusion.json
+npx skill-family-doc-render@0.6.6 --read-proof --proof-root /absolute/proof-root --proof relative/conclusion.json
 ```
 
-`--conclusion-output` 只在调用方给出绝对路径时排他创建一份共同证明，不覆盖已有文件。
+`--conclusion-output` 只在调用方给出绝对路径时排他创建一份共同证明，不覆盖已有文件。未使用该参数时，`--check-project` 不额外生成证明文件。
 
 `--read-proof` 只用调用方给出的 proof-root 和该根内相对路径解释本族证明。它不读 `public-release.json`，不要求站点配置，不重新扫描，也不追随证明正文中的路径。旧证明只记录原目标当时的结论。
 
@@ -114,7 +114,9 @@ npx skill-family-doc-render@0.6.0 --read-proof --proof-root /absolute/proof-root
 请使用 skill-family-docs-render-site 处理仓库 <name> 的知识站检查失败。先读取 public-release.json 和 skill-family-doc-render --check-project --repo <name> 的实际输出，再判断需要内容刷新、纯渲染还是修正配置。不提前刷新覆盖快照，不手改生成产物。
 ```
 
-发布钩子仅执行上述只读项目检查，不向消费者的外部表达服务发请求，不修改正文、覆盖快照或产物。`--check-project`、`--read-proof`、`--status` 和 `check:release-docs` 同样不外发。`npm run verify` 保留这些业务检查，同时通过聚合测试，以隔离配置和本地 mock 运行表达脚本；测试不继承消费者的服务配置或凭据，也不改站点正文。 当前 Agent 已加载本技能时可依据恢复提示继续；宿主没有加载时必须把提示送达用户，不声称已自动分派。
+当前 Agent 已加载本技能时可依据恢复提示继续；宿主没有加载时必须把提示送达用户，不声称已自动分派。
+
+发布钩子仅执行上述只读项目检查，不向消费者的外部表达服务发请求，不修改正文、覆盖快照或产物。`--check-project`、`--read-proof`、`--status` 和 `check:release-docs` 同样不外发。`npm run verify` 保留这些业务检查，同时通过聚合测试，以隔离配置和本地 mock 运行表达脚本；测试不继承消费者的服务配置或凭据，也不改站点正文。
 
 未声明 `site.format` 的旧站仍使用兼容路径。本技能不在普通刷新中把旧站隐式迁移到新模板。
 
