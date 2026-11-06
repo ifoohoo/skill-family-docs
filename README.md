@@ -2,7 +2,11 @@
 
 `skill-family-docs` 是面向 Claude Code、Codex、Kimi Code 与 WorkBuddy / CodeBuddy 的公开知识站技能插件。它让 Agent 用受限 Markdown 准备项目、首次生成知识站、按产品变化刷新内容，或只按现有源重新渲染。
 
-插件不包含渲染实现。精确版本的 npm 包 `skill-family-doc-render` 读取 `public-release.json`，使用包内 `editorial` 模板生成完整 HTML、CSS、静态搜索和浏览器交互。起草与刷新通过 style-guard 的脚本拟稿流程完成：宿主整理事实和读者任务、审核大纲，再顺序拟稿并传入已接受前文；全文通过事实、理解、图文和硬禁核对后才写入。安装者自行选择 OpenAI 兼容服务、模型和 key 的环境变量来源。缺配置、调用失败或候选未接受时保留原稿，报告表达优化未完成。纯渲染和发布检查不调用模型。0.6.0 已分发可配置脚本；主流程替换已随 0.6.1 正式发布并分发。
+插件不包含渲染实现。精确版本的 npm 包 `skill-family-doc-render` 读取 `public-release.json`，使用包内 `editorial` 模板生成完整 HTML、CSS、静态搜索和浏览器交互。
+
+`skill-family-docs-style-guard` 在起草、内容刷新或显式整篇重写时，将完整原稿、核实材料、读者任务、编辑范围及用户裁决交由独立上下文的中文编辑子智能体处理。该编辑者调用已安装的 `humanize-rewrite` 共享入口，通过方法注册与解析组件 `agent-method-registry` 确认项目选择的方法，读取返回的 `skillPath` 所指向的实现并执行。默认实现为 `chinese-humanize-rewrite`，实际调用 Qwen 组织文稿；显式覆盖时可选择其他已安装实现，每次仅执行所选一项，不串联或自动融合。
+
+编辑者返回完整候选文稿、实际解析结果、执行方式及语义核对结果。文档技能族 Docs 负责公开材料范围、页面身份、技术事实和图文信息。负责当前文档任务的主调用方对照技术事实通读全文，核对条件、例外、限制、命令、版本、引用、页面身份与图文信息，并完成验收。主调用方验收通过后，才由 `render-site` 沿既有路径写入站点源目录 `site.dir`。编辑者接受候选文稿，不能代替这次验收。
 
 ## 六个技能
 
@@ -10,7 +14,7 @@
 - `skill-family-docs-setup`：先只读诊断；缺项可安全处理时，展示精确计划和影响并询问是否执行。用户明确同意已展示且复核未漂移的计划后，才补齐当前项目的本地配置。
 - `skill-family-docs-quickstart`：按用户意图选择目标技能，并在同一轮把请求交给目标技能继续执行；它不重复目标技能的业务逻辑。
 - `skill-family-docs-render-site`：处理首次生成、内容刷新、纯渲染，以及显式的目录调整或模板升级。
-- `skill-family-docs-style-guard`：组织材料、审核大纲、调用脚本顺序拟稿，并核对接受稿的事实、理解与表达。
+- `skill-family-docs-style-guard`：派发独立中文编辑者解析共享方法，并核对接受稿的事实、理解与表达。
 - `skill-family-docs-site-design`：验收 `editorial` 模板的导航、阅读、搜索、复制、主题、键盘和窄屏体验。
 
 Claude Code 与 WorkBuddy / CodeBuddy 从插件根目录的 `skills/` 加载六个技能，Codex 与 Kimi Code 从各自 adapter 路径加载，加载路径保持不变。六技能正文的唯一编辑源为 `packages/skill-family-docs/skills`，技能正文修改必须在此路径进行。四份 adapter 目录下的 `skills/` 为生成副本，由 `npm run build:adapters` 显式生成，包含 style-guard 配套脚本与参考资料，不得手工修改或新增 `skills-src`。
@@ -69,23 +73,21 @@ npx skill-family-doc-render@0.6.0 --read-proof --proof-root /absolute/proof-root
 
 ## 表达服务与辅助检测器
 
-需要配置起草、刷新或整篇重写使用的表达服务时，可调用 `skill-family-docs-setup`。站点接入与表达服务配置需分别检查。起草、刷新或整篇重写操作依赖表达服务配置；仅重新渲染、机械检查、读取证明、覆盖检查与刷新、治理及发布检查无需模型配置。
+`humanize-rewrite` 是独立技能族提供的共享中文编辑入口，首次接入可从公开坐标 [ifoohoo/humanize-rewrite v0.1.0](https://github.com/ifoohoo/humanize-rewrite/tree/v0.1.0) 获取依赖，市场与插件名称均为 `humanize-rewrite`。
 
-请用户自行选择 OpenAI 兼容服务的 base URL（基础地址）与模型，并在自己的 shell 中配置以下三项。示例地址与模型名仅用于说明格式，必须替换为用户选定的值；第三项仅为存放 API key 的环境变量名，非 key 本身。
+Codex 用户依次执行两条命令，先执行 `codex plugin marketplace add ifoohoo/humanize-rewrite`，再执行 `codex plugin add humanize-rewrite@humanize-rewrite`。Claude Code 用户通过标准插件市场添加与安装流程，使用同一公开项目与同名插件。
 
-```bash
-export SKILL_FAMILY_DOCS_ENDPOINT='https://api.example.com/v1'
-export SKILL_FAMILY_DOCS_MODEL='your-selected-model'
-export SKILL_FAMILY_DOCS_CREDENTIAL_ENV='MY_DOCS_API_KEY'
-```
+安装完成后，调用已安装的 `humanize-rewrite-setup` 检查运行依赖与所选实现的模型配置。开发维护者可继续使用本地可核验工作区或个人链接，首次用户无需寻找相邻私有工作区。
 
-实际 API key 应由用户在自己的 shell 或已有安全来源中设置并导出至 `MY_DOCS_API_KEY`；若使用其他变量名，需同步更新第三项。严禁将 key 发送至聊天、写入项目文件或日志，亦不可作为命令行参数传入。`setup` 不读取认证文件或用户级模型配置，不自动编辑 shell 配置，也不从 `LLM_*` 环境变量自动补齐三项。服务与模型不绑定默认值或特定提供者。
+默认方法为 `chinese-humanize-rewrite`，当项目未通过 `agent-methods.yaml` 显式覆盖时启用。若存在该文件，用户可指定 `shuorenhua` 或其他已安装的合法实现；方法被禁用、配置无效、方法缺失或指向错误入口时，系统将停止执行，不回退至默认方法，且保留已有合法选择及其他注册项。Registry 根据默认目录和项目覆盖配置解析所选实现。
 
-`setup` 在当前进程检查三项配置与所引用的 key 是否存在、非空，以及凭据变量名是否合法；结果只显示检查项状态，不显示任何变量值。该检查不联网、不读取文稿、不写文件，也不验证服务可达性、key 有效性或模型可用性。表达配置缺项只阻断起草、刷新与整篇重写，不阻断纯渲染或治理检查。
+配置由所选实现决定：`chinese-humanize-rewrite` 默认使用 `LLM_BASE_URL` 和 `LLM_API_KEY`，默认模型为 `qwen3-30b-a3b-instruct-2507`；可选开启开放式审阅，通过 `READABILITY_REVIEW_*` 配置项控制。Docs 不再使用旧的 `SKILL_FAMILY_DOCS_*` 配置模型。检查只报告变量是否配置，不显示变量值或密钥。表达配置检查在本地完成，不调用模型，不外发文稿内容；站点接入可联网查询官方分发版本，因此整个 setup 并非离线操作。环境变量需在宿主启动进程时继承，变更后未生效时应重载配置并重启宿主。分别报告方法是否解析成功、模型配置是否齐全、真实改写是否完成；安装或检查完成不能当作改写完成。
 
-临时 `export` 仅影响当前 shell 及其后续启动的子进程。用户自行修改可信的 shell 配置后，需重新加载该配置；已启动的宿主进程不会自动继承新配置。退出宿主后从已配置的环境重新启动，或按宿主正常方式重启并核对实际进程配置。仅新开任务无法保证环境已更新。
+当共享入口缺失、Registry 解析失败、所选方法运行异常或候选文稿未被接受时，系统保留原始文稿，并报告“表达优化未完成”及具体原因。入口或解析有问题时，使用安装检查技能 `humanize-rewrite-setup`，在授权范围内恢复入口或修正注册、配置；方法运行失败或候选未被接受时，交回同一编辑者处理完整段落或小节，不得绕过禁用状态或错误的项目覆盖配置调用默认方法，也不得由主会话自行改写冒充独立编辑。
 
-本地配置齐全不表示已完成模型调用；首次真正外发仍由 `skill-family-docs-style-guard` 说明材料将发送至所配置服务，并沿既有授权与候选核收流程执行。
+候选文稿须经编辑者核对，并由主调用方完成领域验收后，才可沿既有路径正式写入站点正文。失败期间不提前刷新覆盖快照，不宣称首次生成、刷新或整篇重写已完成。
+
+纯渲染仅根据已有源内容重建产物，不做任何内容修改，不调用表达模型，不覆盖快照。即使快照已落后，仍可重建，但必须明确提示“仍需内容审阅”。机械检查通过不能替代中文语义验收。
 
 style-guard 另附纯 Node 检测器，检查 Markdown 和旧 HTML `<main>` 正文：
 
@@ -99,7 +101,11 @@ node adapters/kimi/skills/skill-family-docs-style-guard/scripts/check-style.mjs 
 
 `package.json` 中的版本号仅表示本地源包版本，不能证明该版本已正式发布、由 Skill Family Hub 登记，或已在宿主中生效。目标版本完成发布、通过验证，并由 Skill Family Hub 接受登记后，方可声称可从 Hub 获取；宿主是否加载仍以实际安装记录为准。
 
-当前本地源包及四份插件清单、四份平台清单均处于 0.6.7 本地候选状态。npm 查询对象为 `skill-family-doc-render`，已观测 npm latest 为 `0.6.6`；文档插件自身已观测 GitHub 标签为 `skill-family-docs-v0.6.6`，但插件本身不是 npm 分发对象。`0.6.7` 仍为三单元本地联合候选，所有宿主的 0.6.7 原生交付尚未完成验收，本地测试结果不可替代正式验证。
+版本信息以 `package.json`、插件清单、平台清单及 `CHANGELOG` 为准，上述文件记录源码状态与变更内容，但不构成正式发布、Hub 登记或宿主环境生效的证明。实际发布状态请查询官方分发记录，Hub 登记状态请查阅平台登记信息，宿主环境加载状态请核对安装日志与运行时加载记录。
+
+本地源码存在、已安装、已加载与已发布是不同状态，不能仅凭版本号或目录存在推断其发布与可用性。Registry 自动解析仅支持 Codex（`codex`）与 Claude Code（`claude-code`）两种宿主身份，该支持不等同于实际改写任务已验证。
+
+`Kimi` 与 `WorkBuddy` 保持原有渲染能力，不可冒用其他宿主身份，亦不可宣称中文编辑流程已通过验证。四个宿主的技能文件内容一致，不代表实际调用均已验证。在 Codex 和 Claude Code 中执行编辑任务时，仍需分别核对技能入口、宿主提供的子智能体工具及实际执行结果。
 
 <a id="support-scope"></a>
 
