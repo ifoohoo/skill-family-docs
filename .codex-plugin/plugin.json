@@ -1,7 +1,7 @@
 {
   "name": "skill-family-docs",
-  "version": "0.6.8",
-  "description": "Multi-platform skill plugin for Claude Code, Codex, Kimi Code, and WorkBuddy/CodeBuddy: methodology for planning, writing, designing, and rendering public documentation sites with the skill-family-doc-render npm CLI.",
+  "version": "0.7.0",
+  "description": "Five-host, five-skill plugin for Claude Code, Codex, Kimi Code, WorkBuddy/CodeBuddy, and Antigravity: planning, writing, building, and checking modern public documentation sites with skill-family-doc-render.",
   "author": {
     "name": "广州市风荷科技有限公司"
   },
@@ -10,16 +10,16 @@
   "keywords": [
     "documentation",
     "github-pages",
-    "style-guide",
-    "site-design",
+    "markdown",
+    "modern-docs",
     "skill",
     "codex"
   ],
   "skills": "./adapters/codex/skills/",
   "interface": {
     "displayName": "Skill Family Docs",
-    "shortDescription": "Plan, write, design, and render public documentation sites",
-    "longDescription": "Six platform-neutral skills for preparing, reviewing, maintaining, and rendering public documentation sites with skill-family-doc-render.",
+    "shortDescription": "Plan, write, build, and check modern public documentation sites",
+    "longDescription": "Five platform-neutral skills (help, quickstart, setup, build-site, check-site) for onboarding, authoring with native AI doc components, rendering modern static sites, and running read-only quality gates with skill-family-doc-render.",
     "developerName": "广州市风荷科技有限公司",
     "category": "Productivity",
     "capabilities": [
@@ -28,8 +28,8 @@
     ],
     "defaultPrompt": [
       "Check whether this project is ready for a public documentation site.",
-      "Refresh this project's public documentation site.",
-      "Review this Chinese technical document before release."
+      "Build or update this project's modern public documentation site.",
+      "Run read-only quality and layout checks on this documentation site."
     ],
     "websiteURL": "https://github.com/ifoohoo/skill-family-docs"
   }

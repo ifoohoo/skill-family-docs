@@ -1,7 +1,7 @@
 {
   "name": "skill-family-docs",
-  "version": "0.6.8",
-  "description": "Multi-platform skill plugin for Claude Code, Codex, Kimi Code, and WorkBuddy/CodeBuddy: methodology for planning, writing, designing, and rendering public documentation sites with the skill-family-doc-render npm CLI.",
+  "version": "0.7.0",
+  "description": "Five-host, five-skill plugin for Claude Code, Codex, Kimi Code, WorkBuddy/CodeBuddy, and Antigravity: planning, writing, building, and checking modern public documentation sites with skill-family-doc-render.",
   "author": {
     "name": "广州市风荷科技有限公司"
   },
@@ -10,8 +10,8 @@
   "keywords": [
     "documentation",
     "github-pages",
-    "style-guide",
-    "site-design",
+    "markdown",
+    "modern-docs",
     "skill",
     "kimi-code",
     "workbuddy"
@@ -19,8 +19,8 @@
   "skills": "./adapters/kimi/skills/",
   "interface": {
     "displayName": "Skill Family Docs",
-    "shortDescription": "Plan, write, design, and render public documentation sites",
-    "longDescription": "Six platform-neutral skills: skill-family-docs-help entry, skill-family-docs-render-site (site information architecture plus the skill-family-doc-render CLI workflow), skill-family-docs-style-guard (three-gate Chinese technical writing guard with a self-contained Node checker), skill-family-docs-site-design (public docs site UI guide), skill-family-docs-setup (read-only readiness checks plus bounded local wiring when explicitly requested), and skill-family-docs-quickstart (intent routing followed by same-turn target skill invocation). Generic methodology only; no private paths or business data.",
+    "shortDescription": "Plan, write, build, and check modern public documentation sites",
+    "longDescription": "Five platform-neutral skills: skill-family-docs-help (overview), skill-family-docs-quickstart (intent routing), skill-family-docs-setup (zero-write diagnosis and concise config setup), skill-family-docs-build-site (user-facing authoring with native components, shuorenhua direct editing, rendering, and coverage refresh), and skill-family-docs-check-site (read-only quality, link, leak, layout, and stale-limit gates).",
     "developerName": "广州市风荷科技有限公司",
     "websiteURL": "https://github.com/ifoohoo/skill-family-docs"
   }

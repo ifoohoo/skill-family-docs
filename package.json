@@ -1,10 +1,11 @@
 {
   "name": "skill-family-docs",
-  "version": "0.6.8",
+  "version": "0.7.0",
   "private": true,
-  "description": "Multi-platform skill plugin for Claude Code, Codex, Kimi Code, and WorkBuddy/CodeBuddy: methodology for planning, writing, designing, and rendering public documentation sites with the skill-family-doc-render npm CLI.",
+  "description": "Five-host, five-skill plugin for Claude Code, Codex, Kimi Code, WorkBuddy/CodeBuddy, and Antigravity: planning, writing, building, and checking modern public documentation sites with skill-family-doc-render.",
   "author": {
     "name": "广州市风荷科技有限公司"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "homepage": "https://ifoohoo.github.io/skill-family-doc-render-site/"
 }

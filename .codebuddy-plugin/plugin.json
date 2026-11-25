@@ -1,7 +1,7 @@
 {
   "name": "skill-family-docs",
-  "version": "0.6.8",
-  "description": "Multi-platform skill plugin for Claude Code, Codex, Kimi Code, and WorkBuddy/CodeBuddy: methodology for planning, writing, designing, and rendering public documentation sites with the skill-family-doc-render npm CLI.",
+  "version": "0.7.0",
+  "description": "Five-host, five-skill plugin for Claude Code, Codex, Kimi Code, WorkBuddy/CodeBuddy, and Antigravity: planning, writing, building, and checking modern public documentation sites with skill-family-doc-render.",
   "author": {
     "name": "广州市风荷科技有限公司"
   },

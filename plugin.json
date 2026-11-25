@@ -1,0 +1,8 @@
+{
+  "name": "skill-family-docs",
+  "displayName": "Skill Family Docs",
+  "version": "0.7.0",
+  "description": "Five-host, five-skill plugin for Claude Code, Codex, Kimi Code, WorkBuddy/CodeBuddy, and Antigravity: planning, writing, building, and checking modern public documentation sites with skill-family-doc-render.",
+  "author": "广州市风荷科技有限公司",
+  "repository": "https://github.com/ifoohoo/skill-family-docs"
+}

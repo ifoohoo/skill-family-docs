@@ -1,5 +1,12 @@
 # 变更日志
 
+## 0.7.0
+
+- 重塑技能体系为职责清晰的 5 个技能：`skill-family-docs-help`、`skill-family-docs-quickstart`、`skill-family-docs-setup`、`skill-family-docs-build-site` 与 `skill-family-docs-check-site`，清理旧的三技能碎片与机械句长/连词统计脚本 `check-style.mjs`。
+- `skill-family-docs-build-site` 明确面向外部使用者写作，围绕真实任务组织弹性章节并善用 6 大原生文档组件，默认推荐通过 `agent-method-registry` 采用 `shuorenhua` 自然中文直编与外部读者冷读核收。
+- `skill-family-docs-setup` 引导配置简洁的 `markdown-v2` + `modern` 站点与弹性 `pages.json`。
+- 五宿主（Claude Code、Codex、Kimi Code、WorkBuddy/CodeBuddy、Antigravity）插件清单、平台清单与四份适配器副本同步升级至 0.7.0。
+
 ## 0.6.8
 
 - 独立编辑子智能体通过 Registry 按 `humanize-rewrite` 解析外置通用中文编辑方法，默认使用 `chinese-humanize-rewrite`。遵循项目覆盖和禁用配置，解析失败时不绕过配置。

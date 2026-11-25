@@ -1,19 +1,12 @@
 {
   "familyId": "skill-family-docs",
   "platformId": "workbuddy",
-  "version": "0.6.8",
+  "version": "0.7.0",
   "logicalMappings": [
     {
       "logicalName": "skill-family-docs-help",
       "physicalName": "skill-family-docs-help",
       "path": "skills/skill-family-docs-help/SKILL.md",
-      "entryType": "skill",
-      "userInvocable": true
-    },
-    {
-      "logicalName": "skill-family-docs-setup",
-      "physicalName": "skill-family-docs-setup",
-      "path": "skills/skill-family-docs-setup/SKILL.md",
       "entryType": "skill",
       "userInvocable": true
     },
@@ -25,23 +18,23 @@
       "userInvocable": true
     },
     {
-      "logicalName": "skill-family-docs-render-site",
-      "physicalName": "skill-family-docs-render-site",
-      "path": "skills/skill-family-docs-render-site/SKILL.md",
+      "logicalName": "skill-family-docs-setup",
+      "physicalName": "skill-family-docs-setup",
+      "path": "skills/skill-family-docs-setup/SKILL.md",
       "entryType": "skill",
       "userInvocable": true
     },
     {
-      "logicalName": "skill-family-docs-style-guard",
-      "physicalName": "skill-family-docs-style-guard",
-      "path": "skills/skill-family-docs-style-guard/SKILL.md",
+      "logicalName": "skill-family-docs-build-site",
+      "physicalName": "skill-family-docs-build-site",
+      "path": "skills/skill-family-docs-build-site/SKILL.md",
       "entryType": "skill",
       "userInvocable": true
     },
     {
-      "logicalName": "skill-family-docs-site-design",
-      "physicalName": "skill-family-docs-site-design",
-      "path": "skills/skill-family-docs-site-design/SKILL.md",
+      "logicalName": "skill-family-docs-check-site",
+      "physicalName": "skill-family-docs-check-site",
+      "path": "skills/skill-family-docs-check-site/SKILL.md",
       "entryType": "skill",
       "userInvocable": true
     }
